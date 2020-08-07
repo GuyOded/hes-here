@@ -1,3 +1,4 @@
+export default 
 {
     "token": "NzQxMjU5NDIyODQ3NzI5NzM0.Xy09og.5SvZk8ubfLkZoMJ-J5f--BvLVlY" 
 }

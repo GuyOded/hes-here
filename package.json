@@ -2,13 +2,20 @@
     "name": "hes-here",
     "version": "1.0.0",
     "description": "A bot that notifies users when other users enter the server",
-    "main": "index.js",
+    "main": "./dist/index.js",
+    "private": true,
     "scripts": {
-      "test": "echo \"Error: no test specified\" && exit 1",
-      "start": "node .",
-      "lint": "eslint ."
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "start": "node ./dist",
+        "build": "tsc"
     },
     "keywords": [],
     "author": "",
-    "license": "ISC"
+    "license": "ISC",
+    "dependencies": {
+        "@types/node": "^14.0.27",
+        "discord.js": "^12.2.0",
+        "ts-node": "^8.10.2",
+        "typescript": "^3.9.7"
+    }
 }

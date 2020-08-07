@@ -1,8 +1,7 @@
-import { Client, Guild, Intents, Presence } from "discord.js";
-import { config, Config, NotificationMapping } from "./configuration/config";
+import { Client, Guild, Intents } from "discord.js";
+import { config } from "./configuration/config";
 import { ConfigurationParser } from "./configuration/configurer"
 import auth from "./configuration/auth";
-import { isNullOrUndefined } from "util";
 
 const client = new Client({
     ws: {
@@ -15,7 +14,7 @@ const client = new Client({
 client.once("ready", () => {
     console.log("Ready!")
 
-    const heroesGuild = client.guilds.cache.find((guild) => {
+    const heroesGuild: Guild | undefined = client.guilds.cache.find((guild) => {
         console.log(guild.name)
         return guild.name === config.serverName
     })
@@ -24,9 +23,7 @@ client.once("ready", () => {
         throw new Error(`Unable to find guild '${config.serverName}'`)
     }
 
-    client.on("presenceUpdate", (oldPresence: Presence | undefined, newPresence: Presence) => {
-        console.log(newPresence)
-    })
+    ConfigurationParser.createMappingFromConfig(config.notificationMapping, Array.from(heroesGuild.members.cache.values()))
 })
 
 client.login(auth.token)

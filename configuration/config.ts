@@ -7,7 +7,7 @@ export const config: Config = {
     },
     {
         notifyee: "guy",
-        notifyOnOnlinePresence: ["guy"]
+        notifyOnOnlinePresence: ["roynecro"]
     }]
 }
 

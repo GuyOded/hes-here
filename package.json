@@ -1,0 +1,14 @@
+{
+    "name": "hes-here",
+    "version": "1.0.0",
+    "description": "A bot that notifies users when other users enter the server",
+    "main": "index.js",
+    "scripts": {
+      "test": "echo \"Error: no test specified\" && exit 1",
+      "start": "node .",
+      "lint": "eslint ."
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC"
+}

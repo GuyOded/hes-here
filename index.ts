@@ -14,9 +14,13 @@ const client = new Client({
     }
 });
 
+if (!auth.token) {
+    throw new Error("Unable to read security token...")
+}
+client.login(auth.token)
+
 client.once("ready", () => {
     console.log("Greetings from Gaspiseere!")
-
     const heroesGuild: Guild | undefined = client.guilds.cache.find((guild) => {
         return guild.name === config.serverName
     })
@@ -24,9 +28,10 @@ client.once("ready", () => {
     if (!heroesGuild) {
         throw new Error(`Unable to find guild '${config.serverName}'`)
     }
+
     console.log(`The following guild ${heroesGuild.name} will be monitored for presence updates, my lord. *BOWS DEEPLY*`)
-    
     console.log(`To your request, the following configuration is interpreted:\n${JSON.stringify(config, null, 2)}`)
+    
     let notificationMapping: Map<User, User[]> | null = ConfigurationParser.createMappingFromConfig(config.notificationMapping,
         Array.from(heroesGuild.members.cache.values()))
     if (!notificationMapping) {
@@ -54,5 +59,3 @@ let subscribePresenceObservers = (notificationMapping: Map<User, User[]>, presen
     })
     return notifiedUsers
 }
-
-client.login(auth.token)

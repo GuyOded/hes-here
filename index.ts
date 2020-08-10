@@ -42,7 +42,10 @@ client.once("ready", () => {
     const presenceSubject: Subject<Presence> = new Subject()
     subscribePresenceObservers(notificationMapping, presenceSubject)
     client.on("presenceUpdate", (oldPresence: Presence | undefined, newPresence: Presence) => {
-        presenceSubject.next(newPresence)
+        // TODO: Move this logic into the observer/filter! It shouldn't be here!
+        if (oldPresence?.status !== "online") {
+            presenceSubject.next(newPresence)
+        }
     })
 })
 

@@ -3,7 +3,7 @@ export const config: Config = {
     notificationMapping: [
     {
         notifyee: "roynecro",
-        notifyOnOnlinePresence: ["guy", "HolyHuly"]
+        notifyOnOnlinePresence: ["guy", "HolyHuly", "JoKeR"]
     },
     {
         notifyee: "guy",
@@ -16,6 +16,10 @@ export const config: Config = {
     {
         notifyee: "SleepyBearer",
         notifyOnOnlinePresence: ["Archaru"]
+    },
+    {
+        notifyee: "JoKeR",
+        notifyOnOnlinePresence: ["roynecro"]
     }]
 }
 

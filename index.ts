@@ -49,6 +49,7 @@ client.once("ready", () => {
     })
 })
 
+// TODO: move to a different class in observers directory (maybe use a namespace as well, read about modules in typescript)
 let subscribePresenceObservers = (notificationMapping: Map<User, User[]>, presenceObservable: Observable<Presence>): Observer<Presence>[] => {
     let notifiedUsers: Observer<Presence>[] = []
     notificationMapping.forEach((usersToMonitor: User[], notifyee: User) => {

@@ -1,5 +1,5 @@
 import { Observer } from "rxjs"
-import { User, Presence } from "discord.js";
+import { User, Presence, Message } from "discord.js";
 import moment = require('moment');
 
 export class PresenceObserver implements Observer<Presence> {
@@ -25,11 +25,17 @@ export class PresenceObserver implements Observer<Presence> {
         if ((!this.lastNotificationFromUserTimestamp.get(presenceEvent.user) ||
             currentTime.diff(this.lastNotificationFromUserTimestamp.get(presenceEvent.user), "minutes") > this.NOTIFICATION_COOLDOWN_IN_MINUTES) &&
             (this.userToNotify.presence.status === "idle" ||
-            this.userToNotify.presence.status === "online")) {
+                this.userToNotify.presence.status === "online")) {
+
             console.log(`Sending ${this.userToNotify.username} a message (${presenceEvent.user.username} entered)`)
-            // TODO: Remove this line on the next version
-            console.debug(`Current time diff: ${currentTime.diff(this.lastNotificationFromUserTimestamp.get(presenceEvent.user), "minutes")}`)
-            this.userToNotify.send(`The user "${presenceEvent.user.username}" has entered the realm.`)
+            // TODO: Remove this line in the next version
+            console.debug(`Current time diff: ${currentTime.diff(this.lastNotificationFromUserTimestamp.get(presenceEvent.user), "minutes")} minutes`)
+            this.userToNotify.send(`The user "${presenceEvent.user.username}" has entered the realm.`).then((value: Message) => {
+                console.debug("Sent message successfully")
+            }).catch((reason: any) => {
+                console.error(`Encountered an error while trying to send a message to ${this.userToNotify.username}.
+                The following error occured: ${reason}`)
+            })
             this.lastNotificationFromUserTimestamp.set(presenceEvent.user, currentTime)
         }
     }

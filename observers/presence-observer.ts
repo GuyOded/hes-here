@@ -1,45 +1,56 @@
 import { Observer } from "rxjs"
-import { User, Presence, Message } from "discord.js";
+import { User, Presence, Message, PresenceStatus } from "discord.js";
 import moment = require('moment');
 
-export class PresenceObserver implements Observer<Presence> {
+export class PresenceObserver implements Observer<PresenceDisplacement> {
     // Prevent overflowing the chats with notifications
-    private readonly NOTIFICATION_COOLDOWN_IN_MINUTES: number = 29
-
+    private readonly notificationCooldownInMinutes: number
     private readonly userToNotify: User
     private lastNotificationFromUserTimestamp: Map<User, moment.Moment>
     closed?: boolean
 
-    constructor(userToNotify: User) {
+    constructor(userToNotify: User,
+        cooldownInMinutes: number = 29) {
         this.userToNotify = userToNotify
         this.lastNotificationFromUserTimestamp = new Map()
+        this.notificationCooldownInMinutes = cooldownInMinutes
     }
 
-    next = (presenceEvent: Presence) => {
-        const currentTime: moment.Moment = moment()
-        if (!presenceEvent || !presenceEvent.user) {
+    next = (presenceEvent: PresenceDisplacement) => {
+        if (!presenceEvent || !presenceEvent.newPresence.user) {
             return
         }
 
-        // TODO: Beautify these bunch of randomly placed conditions
-        if ((!this.lastNotificationFromUserTimestamp.get(presenceEvent.user) ||
-            currentTime.diff(this.lastNotificationFromUserTimestamp.get(presenceEvent.user), "minutes") > this.NOTIFICATION_COOLDOWN_IN_MINUTES) &&
-            (this.userToNotify.presence.status === "idle" ||
-                this.userToNotify.presence.status === "online")) {
+        if (this.isNotInCooldown(presenceEvent) &&
+            this.isUserDisturbable(this.userToNotify.presence.status)) {
 
-            console.log(`Sending ${this.userToNotify.username} a message (${presenceEvent.user.username} entered)`)
-            // TODO: Remove this line in the next version
-            console.debug(`Current time diff: ${currentTime.diff(this.lastNotificationFromUserTimestamp.get(presenceEvent.user), "minutes")} minutes`)
-            this.userToNotify.send(`The user "${presenceEvent.user.username}" has entered the realm.`).then((value: Message) => {
-                console.debug("Sent message successfully")
+            console.log(`Sending ${this.userToNotify.username} a message (${presenceEvent.newPresence.user.username} entered)`)
+            this.userToNotify.send(`The user "${presenceEvent.newPresence.user.username}" has entered the realm.`).then((value: Message) => {
+                console.debug(`Sent message successfully to ${this.userToNotify.username}`)
+                this.lastNotificationFromUserTimestamp.set(presenceEvent.newPresence.user!, moment())
             }).catch((reason: any) => {
                 console.error(`Encountered an error while trying to send a message to ${this.userToNotify.username}.
                 The following error occured: ${reason}`)
             })
-            this.lastNotificationFromUserTimestamp.set(presenceEvent.user, currentTime)
         }
     }
 
     error = (err: any) => void {};
     complete = () => void {};
+
+    private readonly isNotInCooldown = (presenceEvent: PresenceDisplacement): boolean => {
+        const currentTime: moment.Moment = moment()
+
+        return (!this.lastNotificationFromUserTimestamp.get(presenceEvent.newPresence.user!) ||
+            currentTime.diff(this.lastNotificationFromUserTimestamp.get(presenceEvent.newPresence.user!), "minutes") > this.notificationCooldownInMinutes)
+    }
+
+    private readonly isUserDisturbable = (monitoringUserStatus: PresenceStatus): boolean => {
+        return monitoringUserStatus === "idle" || monitoringUserStatus === "online"
+    }
+}
+
+export interface PresenceDisplacement {
+    readonly oldPresence: Presence | undefined;
+    readonly newPresence: Presence;
 }

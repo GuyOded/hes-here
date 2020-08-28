@@ -1,5 +1,6 @@
 export const config: Config = {
     serverName: "Heroes Defence Force",
+    notificationCooldown: 30,
     notificationMapping: [
     {
         notifyee: "roynecro",
@@ -20,11 +21,16 @@ export const config: Config = {
     {
         notifyee: "JoKeR",
         notifyOnOnlinePresence: ["roynecro"]
+    },
+    {
+        notifyee: "HolyHuly",
+        notifyOnOnlinePresence: ["roynecro", "SleepyBearer", "Archaru", "SkillCoterie"]
     }]
 }
 
 export interface Config {
     serverName: string;
+    notificationCooldown: number;
     notificationMapping: NotificationMapping[];
 }
 export interface NotificationMapping {

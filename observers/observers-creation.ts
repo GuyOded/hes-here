@@ -3,7 +3,6 @@ import type { Observer, Observable } from "rxjs"
 import { PresenceObserver, PresenceDisplacement } from "./presence-observer"
 import { filter, map } from "rxjs/operators"
 import * as filters from "./presence-filters"
-import type { PresenceDisplacementAndUserList } from "./presence-filters"
 
 /**
  * Creates and subscribes the necessary observers based on the given notification mapping.
@@ -19,16 +18,9 @@ export const subscribePresenceObservers = (notificationMapping: Map<User, User[]
     notificationMapping.forEach((usersToMonitor: User[], notifyee: User) => {
         const filteredPresenceObservable = presenceObservable.pipe(
             filter(filters.filterPreviousStatusOnline),
-            map((pd: PresenceDisplacement) => {
-                let conjoinedPresenceAndUsers: PresenceDisplacementAndUserList = {
-                    presenceDisplacement: pd,
-                    usersToMonitor: usersToMonitor
-                }
-                return conjoinedPresenceAndUsers
+            filter((pd: PresenceDisplacement) => {
+                return filters.newPresenceOnlineFilter(pd, usersToMonitor)
             })
-        ).pipe(
-            filter(filters.newPresenceOnlineFilter),
-            map(({ presenceDisplacement }) => presenceDisplacement)
         )
 
         const notificationObserver: PresenceObserver = new PresenceObserver(notifyee)

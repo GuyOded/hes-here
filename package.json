@@ -1,25 +1,30 @@
 {
-    "name": "hes-here",
-    "version": "1.0.0",
-    "description": "A bot that notifies users when other users enter the server",
-    "main": "./dist/index.js",
-    "private": true,
-    "scripts": {
-        "start": "node ./dist",
-        "build": "tsc",
-        "debug": "node  --inspect-brk ./dist"
-    },
-    "keywords": [],
-    "author": "",
-    "license": "ISC",
-    "dependencies": {
-        "discord.js": "^12.2.0",
-        "moment": "^2.27.0",
-        "rxjs": "^6.6.2"
-    },
-    "devDependencies": {
-        "@types/node": "^14.0.27",
-        "ts-node": "^8.10.2",
-        "typescript": "^3.9.7"
-    }
+  "name": "hes-here",
+  "version": "1.0.0",
+  "description": "A bot that notifies users when other users enter the server",
+  "main": "./dist/index.js",
+  "private": true,
+  "scripts": {
+    "start": "node ./dist",
+    "build": "tsc",
+    "debug": "node  --inspect-brk ./dist",
+    "test": "jest"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "discord.js": "^12.2.0",
+    "moment": "^2.27.0",
+    "rxjs": "^6.6.2",
+    "yargs": "^16.0.3"
+  },
+  "devDependencies": {
+    "@types/node": "^14.0.27",
+    "@types/yargs": "^15.0.7",
+    "jest": "^26.4.2",
+    "ts-jest": "^26.4.0",
+    "ts-node": "^8.10.2",
+    "typescript": "^3.9.7"
+  }
 }

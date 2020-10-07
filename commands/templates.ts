@@ -1,19 +1,43 @@
-import { command } from "yargs"
 import { Command } from "./command"
+import { StrictOmit } from "../utility/types"
 
 type Action = "SET_NOTIFICATION_LIST" | "SET_COOLDOWN"
+type AvailableArgumentTypes = "string" | "number" | "array" | "boolean"
 
-type PartialCommnad = StrictOmit<Command, "arguments">
-interface CommandTemplate extends PartialCommnad {
-    readonly argumentDescription: Array<any>;
+/**
+ * An interface representing the comprising properties of a command.
+ * Every parser may rely on this defenition when it parses user input.
+ * That isn't to say a parser mayn't extebt this interface adding his own properties. 
+ */
+interface CommandTemplate extends StrictOmit<Command, "arguments"> {
+    readonly argumentsDescription: Array<ArgumentDescription>;
 }
 
-interface ArgumentDescription<T> {
+interface ArgumentDescription {
     readonly explanation: string;
-    readonly type: typeof T
+    readonly type: AvailableArgumentTypes;
+    readonly name: string;
 }
 
-export { Action, CommandTemplate }
+const availableCommands: Array<CommandTemplate> = [
+    {
+        name: "follow",
+        action: "SET_NOTIFICATION_LIST",
+        argumentsDescription: [{
+            name: "members",
+            explanation: "A list of server members Gaspiseere will follow for you",
+            type: "array",
+        }]
+    },
+    {
+        name: "cooldown",
+        action: "SET_COOLDOWN",
+        argumentsDescription: [{
+            name: "duration",
+            explanation: "The time (in minutes) Gaspiseere will wait between two notifications regarding the same member",
+            type: "number"
+        }]
+    }
+]
 
-// TODO: Move to a utility module
-type StrictOmit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>
+export { Action, CommandTemplate, ArgumentDescription, availableCommands }

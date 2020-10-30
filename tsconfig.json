@@ -1,7 +1,8 @@
 {
-  "include": ["./*"],
+  "include": ["./**/*"],
   "exclude": ["./dist"],
   "compilerOptions": {
+    "noImplicitAny": true,
     "incremental": true,
     "target": "es5",                          
     "module": "commonjs",                     

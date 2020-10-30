@@ -1,43 +1,53 @@
-import { Command } from "./command"
-import { StrictOmit } from "../utility/types"
-
-type Action = "SET_NOTIFICATION_LIST" | "SET_COOLDOWN"
+type Action = keyof CommandTemplates<any>
 type AvailableArgumentTypes = "string" | "number" | "array" | "boolean"
 
 /**
  * An interface representing the comprising properties of a command.
- * Every parser may rely on this defenition when it parses user input.
- * That isn't to say a parser mayn't extebt this interface adding his own properties. 
+ * Every parser may rely on this definition when it parses user input.
+ * That isn't to say a parser mayn't extend this interface by adding his own properties. 
  */
-interface CommandTemplate extends StrictOmit<Command, "arguments"> {
-    readonly argumentsDescription: Array<ArgumentDescription>;
-}
-
-interface ArgumentDescription {
+type ArgumentDescriptionEntry = {
     readonly explanation: string;
     readonly type: AvailableArgumentTypes;
+}
+type ArgumentsDescriptionDictionary<T extends string, U extends ArgumentDescriptionEntry> = {
+    [key in T]: U
+}
+type CommandTemplateEntry<T extends string, U extends ArgumentDescriptionEntry> = {
     readonly name: string;
+    readonly argumentsDescription: ArgumentsDescriptionDictionary<T, U>;
+}
+type CommandTemplates<U extends ArgumentDescriptionEntry> = {
+    readonly SET_COOLDOWN: CommandTemplateEntry<"duration", U>
+    readonly SET_NOTIFICATION_LIST: CommandTemplateEntry<"members", U>
 }
 
-const availableCommands: Array<CommandTemplate> = [
-    {
+const availableCommands: CommandTemplates<ArgumentDescriptionEntry> = {
+    SET_NOTIFICATION_LIST: {
         name: "follow",
-        action: "SET_NOTIFICATION_LIST",
-        argumentsDescription: [{
-            name: "members",
-            explanation: "A list of server members Gaspiseere will follow for you",
-            type: "array",
-        }]
+        argumentsDescription: {
+            "members": {
+                explanation: "A list of server members Gaspiseere will follow for you",
+                type: "array"
+            }
+        }
     },
-    {
+    SET_COOLDOWN: {
         name: "cooldown",
-        action: "SET_COOLDOWN",
-        argumentsDescription: [{
-            name: "duration",
-            explanation: "The time (in minutes) Gaspiseere will wait between two notifications regarding the same member",
-            type: "number"
-        }]
+        argumentsDescription: {
+            "duration": {
+                explanation: "The time (in minutes) Gaspiseere will wait between two notifications regarding the same member",
+                type: "number"
+            }
+        }
     }
-]
+}
 
-export { Action, CommandTemplate, ArgumentDescription, availableCommands }
+
+export {
+    Action,
+    CommandTemplates,
+    ArgumentDescriptionEntry,
+    ArgumentsDescriptionDictionary,
+    availableCommands
+}

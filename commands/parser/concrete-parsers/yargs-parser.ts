@@ -1,16 +1,8 @@
-import type { CommandParser } from "../command-parser"
-import type { Command } from "../../command";
-import type { CommandTemplate, ArgumentDescription } from "../../templates"
+import { CommandParser } from "../command-parser"
+import { Command } from "../../command";
+import { CommandTemplates, ArgumentDescriptionEntry } from "../../templates"
 import { availableCommands } from "../../templates"
 import yargs = require('yargs')
-import { StrictOmit } from "../../../utility/types";
-
-interface YargsArgumentDiscription extends ArgumentDescription {
-    alias?: Array<String>
-}
-interface YargsCommandTemplate extends StrictOmit<CommandTemplate, "argumentsDescription"> {
-    argumentsDiscription: YargsArgumentDiscription
-}
 
 export class YargsParser implements CommandParser {
     private readonly args: string;
@@ -25,18 +17,14 @@ export class YargsParser implements CommandParser {
     }
 }
 
+interface YargsArgumentEntry extends ArgumentDescriptionEntry { alias?: Array<string> }
 class YargsParserUtils {
-    public static readonly yargsConfigurationBuilder: yargs.Argv = () => {
-        availableCommands.forEach((template) => {
-            yargs.command(template.name, {
-                
-            })
-        })
-    
-        return yargs.argv
-    }
 
-    private static readonly transformAvailableCommands = (): Array<YargsCommandTemplate> => {
-        
+    
+    private static readonly transformAvailableCommands = (): CommandTemplates<YargsArgumentEntry> => {
+        let yargsCommandTemplates: CommandTemplates<YargsArgumentEntry> = { ...availableCommands }
+        yargsCommandTemplates.SET_COOLDOWN.argumentsDescription["duration"].alias = ["d"]
+        yargsCommandTemplates.SET_NOTIFICATION_LIST.argumentsDescription["members"].alias = ["m"]
+        return yargsCommandTemplates
     }
 }

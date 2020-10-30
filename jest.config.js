@@ -24,5 +24,5 @@ module.exports = {
     "^.+\\.ts$": "ts-jest"
   },
 
-  testMatch: [`${__dirname}/__tests__/**/*.{test, spec}.ts`]
+  testMatch: [`${__dirname}/source/__tests__/**/*.{test, spec}.ts`]
 };

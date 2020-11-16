@@ -8,20 +8,21 @@
     "start": "node ./dist",
     "build": "tsc",
     "debug": "node  --inspect-brk ./dist",
-    "test": "jest"
+    "test": "jest",
+    "test:debug": "node --inspect-brk node_modules/.bin/jest --runInBand"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "argparse": "^2.0.1",
     "discord.js": "^12.2.0",
     "moment": "^2.27.0",
-    "rxjs": "^6.6.2",
-    "yargs": "^16.0.3"
+    "rxjs": "^6.6.2"
   },
   "devDependencies": {
+    "@types/argparse": "^2.0.4",
     "@types/node": "^14.0.27",
-    "@types/yargs": "^15.0.7",
     "jest": "^26.4.2",
     "ts-jest": "^26.4.0",
     "ts-node": "^8.10.2",

@@ -3,6 +3,8 @@ import type { Command } from "../../command";
 import type { CommandTemplates, ArgumentDescriptionEntry, Action, ArgumentsDescriptionDictionary } from "../../templates"
 import { ArgumentParser, SubParser, ArgumentOptions, ArgumentError } from "argparse"
 import { availableCommands } from "../../templates"
+import { Observable, Subscriber } from "rxjs";
+import { first } from "rxjs/operators";
 
 /** An interface that adds alias to the type @see ArgumentDescriptionEntry
  * (unfortunately argparse supports one alias only instead of an array of aliases) 
@@ -60,14 +62,18 @@ export class StringArgparser implements CommandParser {
         this.parser = ArgparserUtils.getArgumentPraser()
     }
 
-    public readonly parse = (): Command | null => {
-        const args: string[] = this.parser.convert_arg_line_to_args(this.argline)
-        try {
-            const result: any = this.parser.parse_args(args)
-        } catch (err) {
-            if (err instanceof ArgumentError)
-                console.log(err.str())
-        }
-        return null
+    public readonly parse = (): Observable<Command> => {
+        const args: string[] = this.argline.split(/\s+/)
+        let parsedArgs: any
+        const source: Observable<Command> = new Observable<Command>((subscriber: Subscriber<Command>) => {
+            try {
+                parsedArgs = this.parser.parse_args(args)
+            } catch (err) {
+                subscriber.error(err)
+            }
+            subscriber.next(parsedArgs)
+            subscriber.complete()
+        })
+        return source
     }
 }

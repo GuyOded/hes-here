@@ -1,78 +1,87 @@
 import type { CommandParser } from "../command-parser"
 import type { Command } from "../../command";
 import type { CommandTemplates, ArgumentDescriptionEntry, Action, ArgumentsDescriptionDictionary } from "../../templates"
-import { ArgumentParser, SubParser, ArgumentOptions, ArgumentError } from "argparse"
+import yargs, { alias, Argv } from "yargs"
 import { availableCommands } from "../../templates"
 import { Observable, Subscriber } from "rxjs";
-import { first } from "rxjs/operators";
+import { parse } from "path";
 
 /** An interface that adds alias to the type @see ArgumentDescriptionEntry
  * (unfortunately argparse supports one alias only instead of an array of aliases) 
  */
-interface ArgparseEntry extends ArgumentDescriptionEntry { alias?: [string, string] }
+interface ArgparseEntry extends ArgumentDescriptionEntry { alias?: string[] }
 type RequiredArgparseEntry = Readonly<Required<ArgparseEntry>>
 /** A utility class (for the private use of this module only) that is meant to perform all the necessary configuration of the
- *  @see ArgumentParser (that is a port of argparse to js)
+ *  @see yargs.Argv
  */
 class ArgparserUtils {
-    private static readonly DESCRIPTION = "Gaspiseere shall help you achieve what you want!"
-    private static readonly PROG_NAME = "gaspiseere"
+    private static readonly DESCRIPTION = "Gaspiseere shall help you achieve what you want!";
+    private static readonly PROG_NAME = "gaspiseere";
+    private static parserInstance: yargs.Argv;
 
-    public static readonly getArgumentPraser = (): ArgumentParser => {
-        const argparseCommandTemplates: CommandTemplates<RequiredArgparseEntry> = ArgparserUtils.transformAvailableCommands()
-        let commandActions: Array<string> = Object.keys(argparseCommandTemplates) as Array<Action>
-        const argParser: ArgumentParser = new ArgumentParser({
-            description: ArgparserUtils.DESCRIPTION,
-            prog: ArgparserUtils.PROG_NAME,
-            exit_on_error: false
-        })
-        const subparsers: SubParser = argParser.add_subparsers()
+    public static readonly getInstance = (): yargs.Argv => {
+        if (!ArgparserUtils.parserInstance) {
+            ArgparserUtils.parserInstance = ArgparserUtils.getArgumentPraser()
+        }
 
+        return ArgparserUtils.parserInstance
+    }
+
+    private static readonly getArgumentPraser = (): yargs.Argv => {
+        const argparseCommandTemplates: CommandTemplates<RequiredArgparseEntry> = ArgparserUtils.transformAvailableCommands();
+        let commandActions: Array<string> = Object.keys(argparseCommandTemplates) as Array<Action>;
+        
+        // TODO: Clean nestedness
         commandActions.forEach((action: string) => {
-            const argumentEntries: ArgumentsDescriptionDictionary<string, RequiredArgparseEntry> = argparseCommandTemplates[action as Action].argumentsDescription
-            const parser: ArgumentParser = subparsers.add_parser(argparseCommandTemplates[action as Action].name)
-            for (let key in argparseCommandTemplates[action as Action].argumentsDescription) {
-                const options: ArgumentOptions = {}
-                // TODO: clean this bit up (possibly have an easy to build json for the configuration)
-                options.nargs = argumentEntries[key].type === "array" ? "+" : undefined
-                options.action = argumentEntries[key].type === "boolean" ? "store_true" : undefined
-                options.type = argumentEntries[key].type === "number" ? Number : String
-                options.metavar = key
-                parser.add_argument(argumentEntries[key].alias[0], argumentEntries[key].alias![1], options)
-            }
-        })
+            const argumentEntries: ArgumentsDescriptionDictionary<string, RequiredArgparseEntry> = argparseCommandTemplates[action as Action].argumentsDescription;
+            yargs.command(argparseCommandTemplates[action as Action].name, "", (yargs: yargs.Argv) => {
+                for (let key in argparseCommandTemplates[action as Action].argumentsDescription) {
+                    const options: yargs.Options = {
+                        type: argumentEntries[key].type,
+                        alias: argumentEntries[key].alias,
+                        desc: argumentEntries[key].explanation
+                    }
 
-        return argParser
+                    yargs.option(key, options);
+                }
+            })
+        })
+        yargs.demandCommand()
+        .scriptName(ArgparserUtils.PROG_NAME)
+        .usage(`${ArgparserUtils.PROG_NAME} <command>\n${ArgparserUtils.DESCRIPTION}`)
+        .version(false);
+
+        return yargs;
     }
 
     private static readonly transformAvailableCommands = (): CommandTemplates<RequiredArgparseEntry> => {
-        let yargsCommandTemplates: CommandTemplates<ArgparseEntry> = { ...availableCommands }
-        yargsCommandTemplates.SET_COOLDOWN.argumentsDescription["duration"].alias = ["-d", "--duration"]
-        yargsCommandTemplates.SET_NOTIFICATION_LIST.argumentsDescription["members"].alias = ["-m", "--members"]
-        return yargsCommandTemplates as CommandTemplates<RequiredArgparseEntry>
+        let yargsCommandTemplates: CommandTemplates<ArgparseEntry> = { ...availableCommands };
+        yargsCommandTemplates.SET_COOLDOWN.argumentsDescription["duration"].alias = ["d"];
+        yargsCommandTemplates.SET_NOTIFICATION_LIST.argumentsDescription["members"].alias = ["m"];
+        return yargsCommandTemplates as CommandTemplates<RequiredArgparseEntry>;
     }
 }
 
 export class StringArgparser implements CommandParser {
     private readonly argline: string;
-    private readonly parser: ArgumentParser;
+    private readonly parser: yargs.Argv;
 
     constructor(args: string) {
-        this.argline = args
-        this.parser = ArgparserUtils.getArgumentPraser()
+        this.argline = args;
+        this.parser = ArgparserUtils.getInstance();
     }
 
     public readonly parse = (): Observable<Command> => {
-        const args: string[] = this.argline.split(/\s+/)
         let parsedArgs: any
         const source: Observable<Command> = new Observable<Command>((subscriber: Subscriber<Command>) => {
-            try {
-                parsedArgs = this.parser.parse_args(args)
-            } catch (err) {
-                subscriber.error(err)
-            }
-            subscriber.next(parsedArgs)
-            subscriber.complete()
+            this.parser.parse(this.argline, {}, (err: Error | undefined, argv, output: string) => {
+                if (argv?.help || err) {
+                    subscriber.error(new Error(output))
+                    return
+                }
+                subscriber.next(parsedArgs)
+                subscriber.complete()
+            })
         })
         return source
     }

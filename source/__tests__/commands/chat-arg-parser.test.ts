@@ -81,3 +81,16 @@ test('should throw error "prefix missing"', () => {
         new StringArgparser("gaiseere cooldown");
     }).toThrow();
 })
+
+test('no arguments', () => {
+    let parser: StringArgparser = new StringArgparser("gaspiseere");
+    parser.parse().subscribe({
+        next: (command: Command) => {
+
+        },
+        error: (err: Error) => {
+            expect(err.message).toEqual(expect.stringContaining("got 0, need at least 1"));
+        }
+    })
+})
+

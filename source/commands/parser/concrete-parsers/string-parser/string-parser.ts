@@ -1,10 +1,10 @@
-import type { CommandParser } from "../command-parser"
-import type { Command } from "../../command";
-import type { CommandTemplates, ArgumentDescriptionEntry, Action, ArgumentsDescriptionDictionary } from "../../templates"
-import yargs, { alias, Argv } from "yargs"
-import { availableCommands } from "../../templates"
+import type { CommandParser } from "../../command-parser";
+import type { Command } from "../../../command";
+import type { CommandTemplates, ArgumentDescriptionEntry, Action, ArgumentsDescriptionDictionary } from "../../../templates";
+import yargs from "yargs";
+import { availableCommands } from "../../../templates";
 import { Observable, Subscriber } from "rxjs";
-import { parse } from "path";
+import { CommandFactory } from "./command-builders";
 
 /** An interface that adds alias to the type @see ArgumentDescriptionEntry
  * (unfortunately argparse supports one alias only instead of an array of aliases) 
@@ -21,25 +21,29 @@ class ArgparserUtils {
 
     public static readonly getInstance = (): yargs.Argv => {
         if (!ArgparserUtils.parserInstance) {
-            ArgparserUtils.parserInstance = ArgparserUtils.getArgumentPraser()
+            ArgparserUtils.parserInstance = ArgparserUtils.getArgumentPraser();
         }
 
-        return ArgparserUtils.parserInstance
+        return ArgparserUtils.parserInstance;
     }
 
     private static readonly getArgumentPraser = (): yargs.Argv => {
         const argparseCommandTemplates: CommandTemplates<RequiredArgparseEntry> = ArgparserUtils.transformAvailableCommands();
         let commandActions: Array<string> = Object.keys(argparseCommandTemplates) as Array<Action>;
-        
+
         // TODO: Clean nestedness
         commandActions.forEach((action: string) => {
             const argumentEntries: ArgumentsDescriptionDictionary<string, RequiredArgparseEntry> = argparseCommandTemplates[action as Action].argumentsDescription;
             yargs.command(argparseCommandTemplates[action as Action].name, "", (yargs: yargs.Argv) => {
                 for (let key in argparseCommandTemplates[action as Action].argumentsDescription) {
+                    const demand: boolean = argumentEntries[key]?.mandatory ? true : false;
+                    const defaultVal: any = argumentEntries[key]?.default ? argumentEntries[key]?.default : undefined;
                     const options: yargs.Options = {
                         type: argumentEntries[key].type,
                         alias: argumentEntries[key].alias,
-                        desc: argumentEntries[key].explanation
+                        desc: argumentEntries[key].explanation,
+                        default: defaultVal,
+                        demandOption: demand
                     }
 
                     yargs.option(key, options);
@@ -47,9 +51,9 @@ class ArgparserUtils {
             })
         })
         yargs.demandCommand()
-        .scriptName(ArgparserUtils.PROG_NAME)
-        .usage(`${ArgparserUtils.PROG_NAME} <command>\n${ArgparserUtils.DESCRIPTION}`)
-        .version(false);
+            .scriptName(ArgparserUtils.PROG_NAME)
+            .usage(`${ArgparserUtils.PROG_NAME} <command>\n${ArgparserUtils.DESCRIPTION}`)
+            .version(false);
 
         return yargs;
     }
@@ -60,6 +64,10 @@ class ArgparserUtils {
         yargsCommandTemplates.SET_NOTIFICATION_LIST.argumentsDescription["members"].alias = ["m"];
         return yargsCommandTemplates as CommandTemplates<RequiredArgparseEntry>;
     }
+
+    public static readonly getProgName = (): string => {
+        return ArgparserUtils.PROG_NAME
+    }
 }
 
 export class StringArgparser implements CommandParser {
@@ -67,22 +75,37 @@ export class StringArgparser implements CommandParser {
     private readonly parser: yargs.Argv;
 
     constructor(args: string) {
-        this.argline = args;
+        this.argline = args.trim();
         this.parser = ArgparserUtils.getInstance();
+
+        if (!this.argline.startsWith(ArgparserUtils.getProgName())) {
+            throw new Error(`Commands must start with ${ArgparserUtils.getProgName()}`)
+        }
     }
 
     public readonly parse = (): Observable<Command> => {
-        let parsedArgs: any
         const source: Observable<Command> = new Observable<Command>((subscriber: Subscriber<Command>) => {
-            this.parser.parse(this.argline, {}, (err: Error | undefined, argv, output: string) => {
+            this.parser.parse(StringArgparser.stripProgName(this.argline), {}, (err: Error | undefined, argv, output: string) => {
                 if (argv?.help || err) {
-                    subscriber.error(new Error(output))
-                    return
+                    // TODO: define a custom error to represent the two different cases
+                    subscriber.error(new Error(output));
+                    subscriber.complete();
+                    return;
                 }
-                subscriber.next(parsedArgs)
-                subscriber.complete()
+
+                const command: Command | null = new CommandFactory().getCommand(argv)
+                if (!command) {
+                    throw new TypeError(`Command: ${this.argline} was unparsable and uncaught in validation`)
+                }
+
+                subscriber.next(command);
+                subscriber.complete();
             })
         })
         return source
+    }
+
+    private static readonly stripProgName = (argline: string): string => {
+        return argline.substring(ArgparserUtils.getProgName().length).trimLeft()
     }
 }

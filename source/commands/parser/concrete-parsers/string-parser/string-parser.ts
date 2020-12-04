@@ -52,6 +52,7 @@ class ArgparserUtils {
         })
         yargs.demandCommand()
             .scriptName(ArgparserUtils.PROG_NAME)
+            .strict()
             .usage(`${ArgparserUtils.PROG_NAME} <command>\n${ArgparserUtils.DESCRIPTION}`)
             .version(false);
 
@@ -87,7 +88,7 @@ export class StringArgparser implements CommandParser {
         const source: Observable<Command> = new Observable<Command>((subscriber: Subscriber<Command>) => {
             this.parser.parse(StringArgparser.stripProgName(this.argline), {}, (err: Error | undefined, argv, output: string) => {
                 if (argv?.help || err) {
-                    // TODO: define a custom error to represent the two different cases
+                    // TODO: Define a custom error to represent the two different cases
                     subscriber.error(new Error(output));
                     subscriber.complete();
                     return;
@@ -95,7 +96,7 @@ export class StringArgparser implements CommandParser {
 
                 const command: Command | null = new CommandFactory().getCommand(argv)
                 if (!command) {
-                    throw new TypeError(`Command: ${this.argline} was unparsable and uncaught in validation`)
+                    throw new TypeError(`Command: ${this.argline} was unparsable and uncaught in yargs validation`)
                 }
 
                 subscriber.next(command);

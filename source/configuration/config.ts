@@ -25,13 +25,18 @@ export const config: Config = {
     {
         notifyee: "HolyHuly",
         notifyOnOnlinePresence: ["roynecro", "SleepyBearer", "Archaru", "SkillCoterie"]
-    }]
+    }],
+    permitChatCLI: [
+        "guy",
+        "roynecro"
+    ]
 }
 
 export interface Config {
     serverName: string;
     notificationCooldown: number;
     notificationMapping: NotificationMapping[];
+    permitChatCLI: string[];
 }
 export interface NotificationMapping {
     notifyee: string;

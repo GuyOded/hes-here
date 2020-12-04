@@ -10,7 +10,8 @@ const client = new Client({
     ws: {
         intents: [Intents.FLAGS.GUILD_PRESENCES,
         Intents.FLAGS.GUILDS,
-        Intents.FLAGS.GUILD_MEMBERS]
+        Intents.FLAGS.GUILD_MEMBERS,
+        Intents.FLAGS.DIRECT_MESSAGES]
     }
 });
 

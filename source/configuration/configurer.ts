@@ -1,11 +1,13 @@
 import { GuildMember, User } from "discord.js"
 import { NotificationMapping } from "./config"
 
+// TODO: Turn class to an insanciable object. The discord client can be a dependency for this class in addition to the whole
+// config object.
 export class ConfigurationParser {
     private constructor() { }
 
     public static createMappingFromConfig(config: NotificationMapping[],
-        availableMembers: Array<GuildMember>): Map<User, User[]> | null {
+        availableMembers: GuildMember[]): Map<User, User[]> | null {
         if (!config)
             return null;
 
@@ -30,13 +32,28 @@ export class ConfigurationParser {
                     console.warn(`Unable to find user \`${userToMonitorPresence}\` in member list`)
                 }
 
-                filteredMembers.push(memberToMonitor!)
-                return filteredMembers
+                filteredMembers.push(memberToMonitor!);
+                return filteredMembers;
             }, [])
 
-            notificationMapping.set(notifyee, usersToMonitor)
+            notificationMapping.set(notifyee, usersToMonitor);
         })
 
-        return notificationMapping
+        return notificationMapping;
+    }
+
+    public static getCLIPermittedUsers(permitCLI: string[], availableMembers: GuildMember[]): User[] {
+        const result: User[] = [];
+        permitCLI.forEach((username: string) => {
+            const user: GuildMember | undefined = availableMembers.find((member: GuildMember) => {
+                member.user.username.toLowerCase() === username.toLowerCase()
+            });
+
+            if (user) {
+                result.push(user.user);
+            }
+        })
+
+        return result;
     }
 }

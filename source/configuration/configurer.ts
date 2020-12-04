@@ -1,20 +1,31 @@
-import { GuildMember, User } from "discord.js"
-import { NotificationMapping } from "./config"
+import { Client, Guild, GuildMember, User } from "discord.js"
+import { config, NotificationMapping } from "./config"
 
 // TODO: Turn class to an insanciable object. The discord client can be a dependency for this class in addition to the whole
 // config object.
 export class ConfigurationParser {
-    private constructor() { }
+    private readonly availableMembers: GuildMember[]
+    public constructor(client: Client) {
+        const heroesGuild: Guild | undefined = client.guilds.cache.find((guild) => {
+            return guild.name === config.serverName
+        })
 
-    public static createMappingFromConfig(config: NotificationMapping[],
-        availableMembers: GuildMember[]): Map<User, User[]> | null {
+        if (!heroesGuild) {
+            throw new Error(`Unable to find guild '${config.serverName}'`)
+        }
+
+        console.log(`The following guild ${heroesGuild.name} will be monitored for presence updates, my lord. *BOWS DEEPLY*`)
+        this.availableMembers = Array.from(heroesGuild.members.cache.values())
+    }
+
+    public createMappingFromConfig(): Map<User, User[]> | null {
         if (!config)
             return null;
 
         let notificationMapping: Map<User, User[]> = new Map()
-        config.forEach((mapping: NotificationMapping) => {
+        config.notificationMapping.forEach((mapping: NotificationMapping) => {
             // Find notifyee in available members
-            const notifyee: User | undefined = availableMembers.find((member: GuildMember) => {
+            const notifyee: User | undefined = this.availableMembers.find((member: GuildMember) => {
                 return member.user.username.toLowerCase() === mapping.notifyee.toLowerCase()
             })?.user
             if (!notifyee) {
@@ -25,7 +36,7 @@ export class ConfigurationParser {
             // Search each monitored user in available users
             const usersToMonitor: User[] = mapping.notifyOnOnlinePresence.reduce<User[]>((filteredMembers: User[],
                 userToMonitorPresence: string) => {
-                const memberToMonitor: User | undefined = availableMembers.find((member: GuildMember) => {
+                const memberToMonitor: User | undefined = this.availableMembers.find((member: GuildMember) => {
                     return member.user.username.toLowerCase() === userToMonitorPresence.toLowerCase()
                 })?.user
                 if (!memberToMonitor) {
@@ -42,10 +53,10 @@ export class ConfigurationParser {
         return notificationMapping;
     }
 
-    public static getCLIPermittedUsers(permitCLI: string[], availableMembers: GuildMember[]): User[] {
+    public getCLIPermittedUsers(): User[] {
         const result: User[] = [];
-        permitCLI.forEach((username: string) => {
-            const user: GuildMember | undefined = availableMembers.find((member: GuildMember) => {
+        config.permitChatCLI.forEach((username: string) => {
+            const user: GuildMember | undefined = this.availableMembers.find((member: GuildMember) => {
                 member.user.username.toLowerCase() === username.toLowerCase()
             });
 

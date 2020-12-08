@@ -1,5 +1,5 @@
 import { User } from "discord.js"
-import type { Observer, Observable, Subscription } from "rxjs"
+import type { Observable, Subscription } from "rxjs"
 import { PresenceObserver, PresenceDisplacement } from "./presence-observer"
 import { filter } from "rxjs/operators"
 import * as filters from "./presence-filters"

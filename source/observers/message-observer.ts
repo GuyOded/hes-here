@@ -34,3 +34,7 @@ class MessageObserver implements Observer<Message> {
     complete = (): void => { }
 
 }
+
+export {
+    MessageObserver
+}

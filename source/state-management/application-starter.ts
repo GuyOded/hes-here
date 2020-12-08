@@ -1,9 +1,10 @@
-import { Client, Presence, User } from "discord.js"
+import { Client, Message, Presence, User } from "discord.js"
 import { ConfigurationParser } from "../configuration/configurer"
 import { config } from "../configuration/config"
 import { Subject } from "rxjs";
 import { PresenceDisplacement } from "../observers/presence-observer";
-import { AppStateService } from "./app-state-service"
+import { AppStateService } from "./app-state-service";
+import { subscribeMessageObservers } from "../observers/observers-creation"
 
 class ApplicationStarter {
     private readonly client: Client;
@@ -34,6 +35,12 @@ class ApplicationStarter {
         this.client.on("presenceUpdate", (oldPresence: Presence | undefined, newPresence: Presence) => {
             const presenceEvent: PresenceDisplacement = { oldPresence, newPresence }
             presenceSubject.next(presenceEvent);
+        })
+
+        const messageSubject: Subject<Message> = new Subject();
+        subscribeMessageObservers(configuration.getCLIPermittedUsers(), messageSubject);
+        this.client.on("message", (message: Message) => {
+            messageSubject.next(message);
         })
     }
 }

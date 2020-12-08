@@ -18,7 +18,7 @@ class CommandFactory {
     private readonly commandsMap: Map<string, CommandBuilder<Argv>>;
     public constructor() {
         this.commandsMap = new Map<string, CommandBuilder<Argv>>()
-        // Can be done programmatically
+        // Maybe can be done programmatically? (Requires changing the Command interface so probably not too viable)
         this.commandsMap.set(availableCommands.SET_COOLDOWN.name, new CooldownCommandBuilder())
         this.commandsMap.set(availableCommands.SET_NOTIFICATION_LIST.name, new FollowCommandBuilder())
     };

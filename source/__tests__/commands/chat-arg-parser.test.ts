@@ -92,7 +92,7 @@ test('should be NaN when duration is word', () => {
     })
 })
 
-test('should throw error "prefix missing"', () => {
+test('should throw error when prefix missing', () => {
     expect(() => {
         new StringArgparser("gaiseere cooldown");
     }).toThrow();

@@ -1,5 +1,5 @@
 import { User } from "discord.js"
-import type { Observer, Observable } from "rxjs"
+import type { Observer, Observable, Subscription } from "rxjs"
 import { PresenceObserver, PresenceDisplacement } from "./presence-observer"
 import { filter } from "rxjs/operators"
 import * as filters from "./presence-filters"
@@ -13,8 +13,8 @@ import * as filters from "./presence-filters"
  */
 export const subscribePresenceObservers = (notificationMapping: Map<User, User[]>,
     presenceObservable: Observable<PresenceDisplacement>,
-    globalCooldownInMinutes: number): Observer<PresenceDisplacement>[] => {
-    let notifiedUsers: Observer<PresenceDisplacement>[] = []
+    globalCooldownInMinutes: number): Subscription[] => {
+    let notifiedUsers: Subscription[] = []
     notificationMapping.forEach((usersToMonitor: User[], notifyee: User) => {
         const filteredPresenceObservable = presenceObservable.pipe(
             filter(filters.filterPreviousStatusOnline),
@@ -24,8 +24,7 @@ export const subscribePresenceObservers = (notificationMapping: Map<User, User[]
         )
 
         const notificationObserver: PresenceObserver = new PresenceObserver(notifyee, globalCooldownInMinutes)
-        notifiedUsers.push(notificationObserver)
-        filteredPresenceObservable.subscribe(notificationObserver)
+        notifiedUsers.push(filteredPresenceObservable.subscribe(notificationObserver))
     })
     return notifiedUsers
 }

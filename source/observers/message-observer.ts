@@ -18,14 +18,16 @@ class MessageObserver implements Observer<Message> {
             return;
         }
 
+        console.debug(`Created parser for '${this.user.username}' with content: '${message.cleanContent}'`);
+
         parser.parse().subscribe({
             next: (command: Command) => {
                 const replyString = `Parsed successfully :)\n${JSON.stringify(command)}`;
                 message.channel.send(replyString);
             },
             error: (error: Error) => {
-                const replyString = `Unable to parse... ${error.message}`
-                message.channel.send(replyString)
+                const replyString = error.message;
+                message.channel.send(replyString, );
             }
         })
     }

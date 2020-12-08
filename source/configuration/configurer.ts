@@ -56,12 +56,12 @@ export class ConfigurationParser {
     public getCLIPermittedUsers(): User[] {
         const result: User[] = [];
         config.permitChatCLI.forEach((username: string) => {
-            const user: GuildMember | undefined = this.availableMembers.find((member: GuildMember) => {
-                member.user.username.toLowerCase() === username.toLowerCase()
+            const guildMember: GuildMember | undefined = this.availableMembers.find((member: GuildMember) => {
+                return member.user.username.toLowerCase() === username.toLowerCase()
             });
 
-            if (user) {
-                result.push(user.user);
+            if (guildMember) {
+                result.push(guildMember.user);
             }
         })
 

@@ -40,6 +40,7 @@ const subscribeMessageObservers = (permittedUsers: User[], messageObservable: Ob
         );
         const messageObserver: MessageObserver = new MessageObserver(permittedUser)
         filteredMessageObservable.subscribe(messageObserver)
+        console.debug(`Create message observer for user: ${permittedUser.username}`)
     });
 }
 

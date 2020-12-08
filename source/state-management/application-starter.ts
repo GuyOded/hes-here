@@ -24,7 +24,7 @@ class ApplicationStarter {
 
         // Maybe remove null union and return an empty map instead?
         let notificationMapping: Map<User, User[]> | null = configuration.createMappingFromConfig();
-        if (!notificationMapping) {
+        if (!notificationMapping || !notificationMapping.size) {
             console.warn("Seems as though no users are meant to be notified. Check the configuration...");
             notificationMapping = new Map();
         }

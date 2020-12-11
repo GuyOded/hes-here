@@ -1,6 +1,6 @@
 import { Command } from "./command"
 
-type Action = keyof CommandTemplates<any>
+type ActionName = keyof CommandTemplates<any>
 type AvailableArgumentTypes = "string" | "number" | "array" | "boolean"
 
 /**
@@ -23,11 +23,11 @@ type CommandTemplateEntry<T extends string, U extends ArgumentDescriptionEntry> 
 }
 type CommandTemplates<U extends ArgumentDescriptionEntry> = {
     readonly SET_COOLDOWN: CommandTemplateEntry<"duration", U>
-    readonly SET_NOTIFICATION_LIST: CommandTemplateEntry<"members", U>
+    readonly ADD_FOLLOW: CommandTemplateEntry<"members", U>
 }
 
 const availableCommands: CommandTemplates<ArgumentDescriptionEntry> = {
-    SET_NOTIFICATION_LIST: {
+    ADD_FOLLOW: {
         name: "follow",
         argumentsDescription: {
             "members": {
@@ -64,7 +64,7 @@ interface FollowCommand extends Command {
 }
 
 export {
-    Action,
+    ActionName as Action,
     CommandTemplates,
     ArgumentDescriptionEntry,
     ArgumentsDescriptionDictionary,

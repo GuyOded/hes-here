@@ -62,7 +62,7 @@ class ArgparserUtils {
     private static readonly transformAvailableCommands = (): CommandTemplates<RequiredArgparseEntry> => {
         let yargsCommandTemplates: CommandTemplates<ArgparseEntry> = { ...availableCommands };
         yargsCommandTemplates.SET_COOLDOWN.argumentsDescription["duration"].alias = ["d"];
-        yargsCommandTemplates.SET_NOTIFICATION_LIST.argumentsDescription["members"].alias = ["m"];
+        yargsCommandTemplates.ADD_FOLLOW.argumentsDescription["members"].alias = ["m"];
         return yargsCommandTemplates as CommandTemplates<RequiredArgparseEntry>;
     }
 

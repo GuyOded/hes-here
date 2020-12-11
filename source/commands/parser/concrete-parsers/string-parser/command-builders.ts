@@ -46,7 +46,7 @@ class FollowCommandBuilder implements CommandBuilder<FollowArgv> {
         const command: FollowCommand = {
             actionName: this.action,
             arguments: {
-                members: args.members
+                members: args.members.map((memberName: string) => { return memberName.toLowerCase() })
             }
         }
         return command;

@@ -13,8 +13,8 @@ type StateTemplate = UserState[];
 
 interface UserState {
     id: Snowflake;
-    cooldown: number;
     following: string[];
+    cooldown?: number;
 }
 
 export {

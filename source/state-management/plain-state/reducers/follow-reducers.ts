@@ -7,14 +7,29 @@ const followReducer: StateTemplateReducer = {
         if (action.actionName != "ADD_FOLLOW") {
             return state;
         }
-        const followArgs: FollowArgs = action.arguments as FollowArgs;
+        const followActionArgs: FollowArgs = action.arguments as FollowArgs;
 
-        return state.map<UserState>((userState: UserState): UserState => {
-            if (userState.id === action.invoker) {
-                userState.following.push(...followArgs.members);
-            }
+        let newState: StateTemplate = [...state];
+        const userStateIndex: number = newState.findIndex((userState: UserState) => {
+            return userState.id === action.invoker;
+        });
 
-            return userState;
-        })
+        if (userStateIndex >= 0) {
+            const userState: UserState = newState[userStateIndex];
+            newState.splice(userStateIndex, 1);
+            return newState.concat({
+                ...userState,
+                following: Array.from(new Set([...userState.following, ...followActionArgs.members]))
+            });
+        }
+
+        return newState.concat({
+            id: action.invoker,
+            following: followActionArgs.members
+        });
     }
+}
+
+export {
+    followReducer
 }

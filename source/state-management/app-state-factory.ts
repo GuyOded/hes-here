@@ -1,18 +1,20 @@
 import type { StateTemplate, UserState } from "./plain-state/state-template";
 import AppState from "./app-state";
-import { UserManager, User, Snowflake } from "discord.js";
+import { Guild, User, Snowflake as string, UserManager, GuildMember } from "discord.js";
 import { NotificationMapping, subscribePresenceObservers } from "../observers/observers-creation";
 import { Observable } from "rxjs";
 import { PresenceDisplacement } from "../observers/presence-observer";
 import { config } from "../configuration/config";
 
 class AppStateFactory {
-    private readonly userManager: UserManager; // TODO: Maybe GuildMemberManager is a better option?
-    private readonly presenceObservable: Observable<PresenceDisplacement>
+    private readonly guild: Guild; // TODO: Maybe GuildMemberManager is a better option?
+    private readonly presenceObservable: Observable<PresenceDisplacement>;
+    private readonly userManager: UserManager;
 
-    constructor(userManager: UserManager, presenceObservable: Observable<PresenceDisplacement>) {
-        this.userManager = userManager;
+    constructor(guild: Guild, userManager: UserManager, presenceObservable: Observable<PresenceDisplacement>) {
+        this.guild = guild;
         this.presenceObservable = presenceObservable;
+        this.userManager = userManager;
     }
 
     readonly translatePlainState = (state: StateTemplate): AppState => {
@@ -28,15 +30,18 @@ class AppStateFactory {
                 return;
             }
 
-            const followingList: User[] = userState.following.map((snowflake: Snowflake) => {
-                const resolvedUser: User | null = this.userManager.resolve(snowflake);
+            const followingList: User[] = userState.following.map((username: string) => {
+                const resolvedUser: GuildMember | undefined = this.guild.members.cache.find((member: GuildMember) => {
+                    return member.user.username.toLowerCase() === username.toLowerCase();
+                });
+
                 if (!resolvedUser) {
-                    console.error(`The snowflake '${snowflake}' is unresolvable and will followed by ${userState.id} (${notifyee.username}).
+                    console.error(`The snowflake '${username}' is unresolvable and will followed by ${userState.id} (${notifyee.username}).
                     The state may be corrupted.`);
                     return null;
                 }
 
-                return resolvedUser;
+                return resolvedUser.user;
             }).filter((user: User | null): user is User => {
                 if (user) {
                     return true;

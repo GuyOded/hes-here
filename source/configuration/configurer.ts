@@ -4,18 +4,18 @@ import { config, NotificationMapping } from "./config"
 // TODO: Turn class to an insanciable object. The discord client can be a dependency for this class in addition to the whole
 // config object.
 export class ConfigurationParser {
-    private readonly availableMembers: GuildMember[]
+    private readonly availableMembers: GuildMember[];
     public constructor(client: Client) {
         const heroesGuild: Guild | undefined = client.guilds.cache.find((guild) => {
-            return guild.name === config.serverName
+            return guild.name === config.serverName;
         })
 
         if (!heroesGuild) {
-            throw new Error(`Unable to find guild '${config.serverName}'`)
+            throw new Error(`Unable to find guild '${config.serverName}'`);
         }
 
-        console.log(`The following guild ${heroesGuild.name} will be monitored for presence updates, my lord. *BOWS DEEPLY*`)
-        this.availableMembers = Array.from(heroesGuild.members.cache.values())
+        console.log(`The following guild ${heroesGuild.name} will be monitored for presence updates, my lord. *BOWS DEEPLY*`);
+        this.availableMembers = Array.from(heroesGuild.members.cache.values());
     }
 
     public createMappingFromConfig(): Map<User, User[]> | null {

@@ -1,4 +1,4 @@
-import { Client, Message, Presence, User } from "discord.js";
+import { Client, Guild, Message, Presence, User } from "discord.js";
 import { ConfigurationParser } from "../configuration/configurer";
 import { config } from "../configuration/config";
 import { Subject } from "rxjs";
@@ -25,11 +25,20 @@ class ApplicationStarter {
             throw new Error("Receieved unready client");
         }
 
+        // TODO: Move this to a different class
+        const heroesGuild: Guild | undefined = client.guilds.cache.find((guild) => {
+            return guild.name === config.serverName;
+        })
+
+        if (!heroesGuild) {
+            throw new Error(`Unable to find guild '${config.serverName}'`);
+        }
+
         this.client = client;
         // Create a method for the purpose of getting an empty store
         this.store = new AppCommandStore([followReducer], [], this.storeListener);
         this.presenceSubject = new Subject<PresenceDisplacement>();
-        this.appStateFactory = new AppStateFactory(client.users, this.presenceSubject.asObservable());
+        this.appStateFactory = new AppStateFactory(heroesGuild, client.users, this.presenceSubject.asObservable());
         this.appStateService = new AppStateService({ presenceObserversSubscriptions: [] });
     }
 
@@ -59,6 +68,7 @@ class ApplicationStarter {
         });
     }
 
+    // TODO: Probably shouldn't be here
     private readonly storeListener: Listener = (plainState: StateTemplate): void => {
         this.appStateService.destroy();
         this.appStateService = new AppStateService(this.appStateFactory.translatePlainState(plainState));

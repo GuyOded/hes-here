@@ -18,9 +18,9 @@ class CommandFactory {
     private readonly commandsMap: Map<string, CommandBuilder<Argv>>;
     public constructor() {
         this.commandsMap = new Map<string, CommandBuilder<Argv>>()
-        // Can be done programmatically
+        // Maybe can be done programmatically? (Requires changing the Command interface so probably not too viable)
         this.commandsMap.set(availableCommands.SET_COOLDOWN.name, new CooldownCommandBuilder())
-        this.commandsMap.set(availableCommands.SET_NOTIFICATION_LIST.name, new FollowCommandBuilder())
+        this.commandsMap.set(availableCommands.ADD_FOLLOW.name, new FollowCommandBuilder())
     };
 
     public readonly getCommand = (argv: Argv): Command | null => {
@@ -41,12 +41,12 @@ interface CommandBuilder<T extends Argv> {
 }
 
 class FollowCommandBuilder implements CommandBuilder<FollowArgv> {
-    readonly action: Action = "SET_NOTIFICATION_LIST";
+    readonly action: Action = "ADD_FOLLOW";
     public readonly build = (args: FollowArgv): Command => {
         const command: FollowCommand = {
-            action: this.action,
+            actionName: this.action,
             arguments: {
-                members: args.members
+                members: args.members.map((memberName: string) => { return memberName.toLowerCase() })
             }
         }
         return command;
@@ -57,7 +57,7 @@ class CooldownCommandBuilder implements CommandBuilder<CooldownArgv> {
     readonly action: Action = "SET_COOLDOWN";
     public readonly build = (args: CooldownArgv): Command => {
         const command: CooldownCommand = {
-            action: this.action,
+            actionName: this.action,
             arguments: {
                 duration: args.duration
             }

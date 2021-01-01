@@ -11,7 +11,7 @@ test('test general help message', () => {
         }
     })
     expect(error).toEqual(expect.stringContaining(availableCommands.SET_COOLDOWN.name))
-    expect(error).toEqual(expect.stringContaining(availableCommands.SET_NOTIFICATION_LIST.name))
+    expect(error).toEqual(expect.stringContaining(availableCommands.ADD_FOLLOW.name))
 })
 
 test('test follow command help message', () => {
@@ -92,7 +92,7 @@ test('should be NaN when duration is word', () => {
     })
 })
 
-test('should throw error "prefix missing"', () => {
+test('should throw error when prefix missing', () => {
     expect(() => {
         new StringArgparser("gaiseere cooldown");
     }).toThrow();

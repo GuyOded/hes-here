@@ -2,12 +2,15 @@ import { Observer } from "rxjs";
 import { Message, User } from "discord.js";
 import { StringArgparser } from "../commands/parser/concrete-parsers/string-parser/string-parser";
 import { Command } from "../commands/command"
+import { AppCommandStore } from "../state-management/plain-state/store";
 
 class MessageObserver implements Observer<Message> {
-    readonly user: User;
+    private readonly user: User;
+    private readonly store: AppCommandStore;
 
-    constructor(user: User) {
+    constructor(user: User, store: AppCommandStore) {
         this.user = user;
+        this.store = store;
     }
 
     next = (message: Message): void => {
@@ -22,12 +25,11 @@ class MessageObserver implements Observer<Message> {
 
         parser.parse().subscribe({
             next: (command: Command) => {
-                const replyString = `Parsed successfully :)\n${JSON.stringify(command)}`;
-                message.channel.send(replyString);
+                this.onParsedCommand(command, message);
             },
             error: (error: Error) => {
                 const replyString = error.message;
-                message.channel.send(replyString, );
+                message.channel.send(replyString);
             }
         })
     }
@@ -35,6 +37,14 @@ class MessageObserver implements Observer<Message> {
     error = (err: any): void => { }
     complete = (): void => { }
 
+    private readonly onParsedCommand = (command: Command, message: Message) => {
+        // TODO: verify
+
+        this.store.dispatch({
+            ...command,
+            invoker: message.author.id
+        });
+    }
 }
 
 export {

@@ -1,13 +1,24 @@
-import { Client, Message, Presence, User } from "discord.js"
-import { ConfigurationParser } from "../configuration/configurer"
-import { config } from "../configuration/config"
+import { Client, Message, Presence, User } from "discord.js";
+import { ConfigurationParser } from "../configuration/configurer";
+import { config } from "../configuration/config";
 import { Subject } from "rxjs";
 import { PresenceDisplacement } from "../observers/presence-observer";
 import { AppStateService } from "./app-state-service";
-import { subscribeMessageObservers } from "../observers/observers-creation"
+import { AppCommandStore, Listener } from "./plain-state/store"
+import { followReducer } from "./plain-state/reducers/follow-reducers";
+import { StateTemplate } from "./plain-state/state-template";
+import { subscribeMessageObservers } from "../observers/observers-creation";
+import { AppStateFactory } from "./app-state-factory"
 
+/* TODO: The application starter should send signals to other classes to start performing their job
+   This logic should not be over complicated though. For now just perform logic that doesn't belong to this class here in separate methods */
+// TODO: Remove unnecessary logic from this class
 class ApplicationStarter {
     private readonly client: Client;
+    private readonly store: AppCommandStore;
+    private readonly appStateFactory: AppStateFactory;
+    private readonly presenceSubject: Subject<PresenceDisplacement>;
+    private appStateService: AppStateService;
 
     constructor(client: Client) {
         if (!client.readyAt) {
@@ -15,6 +26,11 @@ class ApplicationStarter {
         }
 
         this.client = client;
+        // Create a method for the purpose of getting an empty store
+        this.store = new AppCommandStore([followReducer], [], this.storeListener);
+        this.presenceSubject = new Subject<PresenceDisplacement>();
+        this.appStateFactory = new AppStateFactory(client.users, this.presenceSubject.asObservable());
+        this.appStateService = new AppStateService({ presenceObserversSubscriptions: [] });
     }
 
     public readonly run = (): void => {
@@ -29,19 +45,23 @@ class ApplicationStarter {
             notificationMapping = new Map();
         }
 
-        const presenceSubject: Subject<PresenceDisplacement> = new Subject();
+        // TODO: Provide an abstraction for this repeating logic
         // Give to a different object that will manage the state upon redux mutation.
-        const appStateService: AppStateService = new AppStateService(notificationMapping, presenceSubject.asObservable());
         this.client.on("presenceUpdate", (oldPresence: Presence | undefined, newPresence: Presence) => {
             const presenceEvent: PresenceDisplacement = { oldPresence, newPresence }
-            presenceSubject.next(presenceEvent);
-        })
+            this.presenceSubject.next(presenceEvent);
+        });
 
         const messageSubject: Subject<Message> = new Subject();
-        subscribeMessageObservers(configuration.getCLIPermittedUsers(), messageSubject);
+        subscribeMessageObservers(configuration.getCLIPermittedUsers(), messageSubject.asObservable(), this.store);
         this.client.on("message", (message: Message) => {
             messageSubject.next(message);
-        })
+        });
+    }
+
+    private readonly storeListener: Listener = (plainState: StateTemplate): void => {
+        this.appStateService.destroy();
+        this.appStateService = new AppStateService(this.appStateFactory.translatePlainState(plainState));
     }
 }
 

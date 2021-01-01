@@ -39,7 +39,7 @@ class UserStateStore implements CommandStore<StateTemplate> {
         this.state = this.reducers.reduce<StateTemplate>((previousState: StateTemplate, currentReducer: StateTemplateReducer) => {
             return currentReducer.reduce(action, previousState);
         }, this.state);
-        this.listener({ ...this.state });
+        this.listener([...this.state]);
     }
 
     getState(): StateTemplate {

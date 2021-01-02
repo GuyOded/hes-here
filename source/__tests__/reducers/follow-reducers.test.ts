@@ -7,7 +7,7 @@ import { FollowArgs } from  "../../commands/templates";
  */
 
 test("Empty state should contain 1 element after reduce", () => {
-    const state: StateTemplate = []
+    const state: StateTemplate = [];
     const actionArgs: FollowArgs = {
         members: ["asasd", "asdasd"]
     }

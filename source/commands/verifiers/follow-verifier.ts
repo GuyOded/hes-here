@@ -27,7 +27,7 @@ class FollowVerifier implements CommandVerifier {
             })
         });
 
-        if (!unknownMembers) {
+        if (unknownMembers.length === 0) {
             return result;
         }
 

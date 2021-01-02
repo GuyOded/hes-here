@@ -11,6 +11,7 @@ import { subscribeMessageObservers } from "../observers/observers-creation";
 import { AppStateFactory } from "./app-state-factory"
 import { CommandVerifier } from "../commands/verifiers/command-verifier";
 import { RootVerifier } from "../commands/verifiers/root-verifier";
+import { setCooldownReducer } from "./plain-state/reducers/cooldown-reducers";
 
 /* TODO: The application starter should send signals to other classes to start performing their job
    This logic should not be over complicated though. For now just perform logic that doesn't belong to this class here in separate methods */
@@ -39,7 +40,7 @@ class ApplicationStarter {
 
         this.client = client;
         // Create a method for the purpose of getting an empty store
-        this.store = new AppCommandStore([followReducer], [], this.storeListener);
+        this.store = new AppCommandStore([followReducer, setCooldownReducer], [], this.storeListener);
         this.presenceSubject = new Subject<PresenceDisplacement>();
         this.appStateFactory = new AppStateFactory(heroesGuild, client.users, this.presenceSubject.asObservable());
         this.rootVerifier = new RootVerifier(heroesGuild);

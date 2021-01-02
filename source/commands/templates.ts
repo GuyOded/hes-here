@@ -1,4 +1,6 @@
-type Action = keyof CommandTemplates<any>
+import { Command } from "./command"
+
+type ActionName = keyof CommandTemplates<any>
 type AvailableArgumentTypes = "string" | "number" | "array" | "boolean"
 
 /**
@@ -9,6 +11,8 @@ type AvailableArgumentTypes = "string" | "number" | "array" | "boolean"
 type ArgumentDescriptionEntry = {
     readonly explanation: string;
     readonly type: AvailableArgumentTypes;
+    readonly mandatory?: boolean;
+    readonly default?: any;
 }
 type ArgumentsDescriptionDictionary<T extends string, U extends ArgumentDescriptionEntry> = {
     [key in T]: U
@@ -19,16 +23,17 @@ type CommandTemplateEntry<T extends string, U extends ArgumentDescriptionEntry> 
 }
 type CommandTemplates<U extends ArgumentDescriptionEntry> = {
     readonly SET_COOLDOWN: CommandTemplateEntry<"duration", U>
-    readonly SET_NOTIFICATION_LIST: CommandTemplateEntry<"members", U>
+    readonly ADD_FOLLOW: CommandTemplateEntry<"members", U>
 }
 
 const availableCommands: CommandTemplates<ArgumentDescriptionEntry> = {
-    SET_NOTIFICATION_LIST: {
+    ADD_FOLLOW: {
         name: "follow",
         argumentsDescription: {
             "members": {
                 explanation: "A list of server members Gaspiseere will follow for you",
-                type: "array"
+                type: "array",
+                default: []
             }
         }
     },
@@ -37,17 +42,35 @@ const availableCommands: CommandTemplates<ArgumentDescriptionEntry> = {
         argumentsDescription: {
             "duration": {
                 explanation: "The time (in minutes) Gaspiseere will wait between two notifications regarding the same member",
-                type: "number"
+                type: "number",
+                mandatory: true
             }
         }
     }
 }
 
+type CooldownArgs = {
+    duration: number;
+}
+type FollowArgs = {
+    members: Array<string>;
+}
+
+interface CooldownCommand extends Command {
+    readonly arguments: CooldownArgs; 
+}
+interface FollowCommand extends Command {
+    readonly arguments: FollowArgs;
+}
 
 export {
-    Action,
+    ActionName as Action,
     CommandTemplates,
     ArgumentDescriptionEntry,
     ArgumentsDescriptionDictionary,
+    CooldownArgs,
+    FollowArgs,
+    CooldownCommand,
+    FollowCommand,
     availableCommands
 }

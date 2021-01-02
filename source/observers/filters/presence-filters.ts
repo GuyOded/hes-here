@@ -1,4 +1,4 @@
-import type { PresenceDisplacement } from "./presence-observer"
+import type { PresenceDisplacement } from "./../presence-observer"
 import type { User } from "discord.js"
 
 // Don't notify if the previous status was online (avoid sending a message when someone entered a game for example)

@@ -2,7 +2,7 @@
 import { Action } from "./templates"
 
 interface Command {
-    readonly action: Action;
+    readonly actionName: Action;
     readonly arguments: Object;
 }
 

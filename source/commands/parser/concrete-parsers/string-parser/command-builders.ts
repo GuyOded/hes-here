@@ -1,5 +1,5 @@
-import { Action, availableCommands, CooldownArgs, CooldownCommand, FollowArgs, FollowCommand } from "../../../templates";
 import { Command } from "../../../command";
+import { Action, availableCommands, CooldownArgs, CooldownCommand, FollowArgs, FollowCommand } from "../../../templates";
 
 type Argv = {
     [argName: string]: unknown,
@@ -56,6 +56,9 @@ class FollowCommandBuilder implements CommandBuilder<FollowArgv> {
 class CooldownCommandBuilder implements CommandBuilder<CooldownArgv> {
     readonly action: Action = "SET_COOLDOWN";
     public readonly build = (args: CooldownArgv): Command => {
+        if (Array.isArray(args.duration)) {
+            args.duration = args.duration[args.duration.length - 1];
+        }
         const command: CooldownCommand = {
             actionName: this.action,
             arguments: {
@@ -66,4 +69,4 @@ class CooldownCommandBuilder implements CommandBuilder<CooldownArgv> {
     }
 }
 
-export { CommandFactory }
+export { CommandFactory };

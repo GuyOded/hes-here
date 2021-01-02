@@ -6,6 +6,7 @@ import { filter } from "rxjs/operators";
 import * as PresenceFilters from "./filters/presence-filters";
 import * as MessageFilters from "./filters/message-filters";
 import { AppCommandStore } from "../state-management/plain-state/store";
+import { CommandVerifier } from "../commands/verifiers/command-verifier";
 
 
 // TODO: The long inline type should be defined somewhere
@@ -38,7 +39,8 @@ const subscribePresenceObservers = (notificationMapping: NotificationMapping,
     return notifiedUsers;
 }
 
-const subscribeMessageObservers = (permittedUsers: User[], messageObservable: Observable<Message>, store: AppCommandStore): void => {
+const subscribeMessageObservers = (permittedUsers: User[], messageObservable: Observable<Message>, store: AppCommandStore,
+    commandVerifier: CommandVerifier): void => {
     permittedUsers.forEach((permittedUser: User) => {
         const filteredMessageObservable: Observable<Message> = messageObservable.pipe(
             filter((message: Message): boolean => {
@@ -46,7 +48,7 @@ const subscribeMessageObservers = (permittedUsers: User[], messageObservable: Ob
             })
         );
 
-        const messageObserver: MessageObserver = new MessageObserver(permittedUser, store);
+        const messageObserver: MessageObserver = new MessageObserver(permittedUser, store, commandVerifier);
         filteredMessageObservable.subscribe(messageObserver);
         console.debug(`Create message observer for user: ${permittedUser.username}`);
     });

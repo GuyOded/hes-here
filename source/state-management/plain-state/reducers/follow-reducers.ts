@@ -8,6 +8,11 @@ const followReducer: StateTemplateReducer = {
             return state;
         }
         const followActionArgs: FollowArgs = action.arguments as FollowArgs;
+        const flattenedFollowArgs: FollowArgs = {
+            ...followActionArgs,
+            // TODO: Write a utility function for removing duplicates
+            members: Array.from(new Set([...followActionArgs.members]))
+        }
 
         let newState: StateTemplate = [...state];
         const userStateIndex: number = newState.findIndex((userState: UserState) => {
@@ -19,13 +24,13 @@ const followReducer: StateTemplateReducer = {
             newState.splice(userStateIndex, 1);
             return newState.concat({
                 ...userState,
-                following: Array.from(new Set([...userState.following, ...followActionArgs.members]))
+                following: Array.from(new Set([...userState.following, ...flattenedFollowArgs.members]))
             });
         }
 
         return newState.concat({
             id: action.invoker,
-            following: followActionArgs.members
+            following: flattenedFollowArgs.members
         });
     }
 }

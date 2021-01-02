@@ -1,16 +1,19 @@
 import { Observer } from "rxjs";
 import { Message, User } from "discord.js";
 import { StringArgparser } from "../commands/parser/concrete-parsers/string-parser/string-parser";
-import { Command } from "../commands/command"
-import { AppCommandStore } from "../state-management/plain-state/store";
+import { Command } from "../commands/command";
+import { Action, AppCommandStore } from "../state-management/plain-state/store";
+import { CommandVerifier, VerificationResult } from "../commands/verifiers/command-verifier";
 
 class MessageObserver implements Observer<Message> {
     private readonly user: User;
     private readonly store: AppCommandStore;
+    private readonly commandVerifier: CommandVerifier;
 
-    constructor(user: User, store: AppCommandStore) {
+    constructor(user: User, store: AppCommandStore, commandVerifier: CommandVerifier) {
         this.user = user;
         this.store = store;
+        this.commandVerifier = commandVerifier;
     }
 
     next = (message: Message): void => {
@@ -38,12 +41,17 @@ class MessageObserver implements Observer<Message> {
     complete = (): void => { }
 
     private readonly onParsedCommand = (command: Command, message: Message) => {
-        // TODO: verify
-
-        this.store.dispatch({
+        const action: Action = {
             ...command,
             invoker: message.author.id
-        });
+        }
+
+        const verificationResult: VerificationResult = this.commandVerifier.verify(action);
+        if (verificationResult.failure) {
+            message.channel.send(verificationResult.message);
+        }
+
+        this.store.dispatch(action);
     }
 }
 

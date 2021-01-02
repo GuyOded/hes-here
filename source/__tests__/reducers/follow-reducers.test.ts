@@ -23,9 +23,9 @@ test("Empty state should contain 1 element after reduce", () => {
             id: "asdasd",
             following: ["asasd", "asdasd"]
         }
-    ]
+    ];
     expect(newState).toEqual(expectedState);
-})
+});
 
 test("Member that is already followed should not be added", () => {
     const state: StateTemplate = [{
@@ -43,4 +43,24 @@ test("Member that is already followed should not be added", () => {
     }, state);
 
     expect(newState).toEqual(state);
-})
+});
+
+test("Member that has been specified multiple times should only be added once", () => {
+    const state: StateTemplate = [];
+
+    const newState: StateTemplate = FollowReducers.followReducer.reduce({
+        invoker: "me",
+        actionName: "ADD_FOLLOW",
+        arguments: {
+            members: ["roynecro", "roynecro"]
+        } as FollowArgs
+    }, state);
+
+    const expectedState: StateTemplate = [
+        {
+            id: "me",
+            following: ["roynecro"]
+        }
+    ];
+    expect(newState).toEqual(expectedState);
+});

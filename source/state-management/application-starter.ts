@@ -9,6 +9,8 @@ import { followReducer } from "./plain-state/reducers/follow-reducers";
 import { StateTemplate } from "./plain-state/state-template";
 import { subscribeMessageObservers } from "../observers/observers-creation";
 import { AppStateFactory } from "./app-state-factory"
+import { CommandVerifier } from "../commands/verifiers/command-verifier";
+import { RootVerifier } from "../commands/verifiers/root-verifier";
 
 /* TODO: The application starter should send signals to other classes to start performing their job
    This logic should not be over complicated though. For now just perform logic that doesn't belong to this class here in separate methods */
@@ -18,6 +20,7 @@ class ApplicationStarter {
     private readonly store: AppCommandStore;
     private readonly appStateFactory: AppStateFactory;
     private readonly presenceSubject: Subject<PresenceDisplacement>;
+    private readonly rootVerifier: CommandVerifier;
     private appStateService: AppStateService;
 
     constructor(client: Client) {
@@ -39,6 +42,7 @@ class ApplicationStarter {
         this.store = new AppCommandStore([followReducer], [], this.storeListener);
         this.presenceSubject = new Subject<PresenceDisplacement>();
         this.appStateFactory = new AppStateFactory(heroesGuild, client.users, this.presenceSubject.asObservable());
+        this.rootVerifier = new RootVerifier(heroesGuild);
         this.appStateService = new AppStateService({ presenceObserversSubscriptions: [] });
     }
 
@@ -62,7 +66,7 @@ class ApplicationStarter {
         });
 
         const messageSubject: Subject<Message> = new Subject();
-        subscribeMessageObservers(configuration.getCLIPermittedUsers(), messageSubject.asObservable(), this.store);
+        subscribeMessageObservers(configuration.getCLIPermittedUsers(), messageSubject.asObservable(), this.store, this.rootVerifier);
         this.client.on("message", (message: Message) => {
             messageSubject.next(message);
         });

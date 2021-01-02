@@ -29,3 +29,7 @@ const YES_REPLIES: string[] = [
     "For the Lich King!",
     "By your words!"
 ]
+
+export {
+    YES_REPLIES
+}

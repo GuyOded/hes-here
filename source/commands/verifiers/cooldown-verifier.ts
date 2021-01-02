@@ -1,6 +1,7 @@
 import { Action } from "../../state-management/plain-state/store";
 import { CooldownArgs } from "../templates";
 import { CommandVerifier, VerificationResult } from "./command-verifier";
+import { getRandomSuccessResult } from "./verification-utils";
 
 
 class CooldownVerifier implements CommandVerifier {

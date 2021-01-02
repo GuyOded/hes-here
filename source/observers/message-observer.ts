@@ -47,8 +47,10 @@ class MessageObserver implements Observer<Message> {
         }
 
         const verificationResult: VerificationResult = this.commandVerifier.verify(action);
+        console.debug(verificationResult);
         if (verificationResult.failure) {
             message.channel.send(verificationResult.message);
+            return;
         }
 
         this.store.dispatch(action);

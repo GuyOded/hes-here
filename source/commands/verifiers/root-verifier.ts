@@ -21,8 +21,8 @@ class RootVerifier implements CommandVerifier {
 
         this.verifiers.find((verifier) => {
             const verifierResult: VerificationResult = verifier.verify(action);
-            if (result.failure) {
-                result = verifierResult
+            if (verifierResult.failure) {
+                result = verifierResult;
                 return true;
             }
 

@@ -33,7 +33,7 @@ class FollowVerifier implements CommandVerifier {
 
         return {
             failure: true,
-            message: `My appologies, but following ${unknownMembers} is beyond my reach.`
+            message: `My apologies, but following ${unknownMembers} is beyond my reach.`
         }
     }
 }

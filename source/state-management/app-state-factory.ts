@@ -36,7 +36,7 @@ class AppStateFactory {
                 });
 
                 if (!resolvedUser) {
-                    console.error(`The snowflake '${username}' is unresolvable and will followed by ${userState.id} (${notifyee.username}).
+                    console.error(`The snowflake '${username}' is unresolvable and won't followed by ${userState.id} (${notifyee.username}).
                     The state may be corrupted.`);
                     return null;
                 }

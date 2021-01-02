@@ -53,6 +53,10 @@ class MessageObserver implements Observer<Message> {
             return;
         }
 
+        if (verificationResult.message) {
+            message.channel.send(verificationResult.message);
+        }
+
         this.store.dispatch(action);
     }
 }

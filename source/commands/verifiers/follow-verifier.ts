@@ -2,6 +2,7 @@ import { Guild, GuildMember } from "discord.js";
 import { Action } from "../../state-management/plain-state/store";
 import { FollowArgs } from "../templates";
 import { CommandVerifier, VerificationResult } from "./command-verifier";
+import { getRandomSuccessResult } from "./verification-utils";
 
 class FollowVerifier implements CommandVerifier {
     private readonly guild: Guild;
@@ -11,13 +12,13 @@ class FollowVerifier implements CommandVerifier {
     }
 
     public readonly verify = (action: Action): VerificationResult => {
-        const result: VerificationResult = {
+        const success: VerificationResult = {
             failure: false,
             message: ""
         }
 
         if (action.actionName != "ADD_FOLLOW") {
-            return result;
+            return success;
         }
 
         const args: FollowArgs = action.arguments as FollowArgs;
@@ -28,7 +29,7 @@ class FollowVerifier implements CommandVerifier {
         });
 
         if (unknownMembers.length === 0) {
-            return result;
+            return success;
         }
 
         return {

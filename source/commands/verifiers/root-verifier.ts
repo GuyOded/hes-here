@@ -3,6 +3,7 @@ import { Action } from "../../state-management/plain-state/store";
 import { CommandVerifier, VerificationResult } from "./command-verifier";
 import { CooldownVerifier } from "./cooldown-verifier";
 import { FollowVerifier } from "./follow-verifier";
+import { getRandomSuccessResult } from "./verification-utils";
 
 class RootVerifier implements CommandVerifier {
     private readonly verifiers: CommandVerifier[];
@@ -14,10 +15,7 @@ class RootVerifier implements CommandVerifier {
     }
 
     readonly verify = (action: Action): VerificationResult => {
-        let result: VerificationResult = {
-            failure: false,
-            message: ""
-        }
+        let result: VerificationResult = getRandomSuccessResult();
 
         this.verifiers.find((verifier) => {
             const verifierResult: VerificationResult = verifier.verify(action);

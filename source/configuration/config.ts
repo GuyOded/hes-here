@@ -29,7 +29,11 @@ export const config: Config = {
     ],
     permitChatCLI: [
         "guy",
-        "roynecro"
+        "roynecro",
+        "holyhuly",
+        "userdave",
+        "archaru",
+        "sleepybearer"
     ]
 }
 

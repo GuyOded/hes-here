@@ -17,10 +17,11 @@ type FollowArgv = FollowArgs & Argv;
 class CommandFactory {
     private readonly commandsMap: Map<string, CommandBuilder<Argv>>;
     public constructor() {
-        this.commandsMap = new Map<string, CommandBuilder<Argv>>()
+        this.commandsMap = new Map<string, CommandBuilder<Argv>>();
         // Maybe can be done programmatically? (Requires changing the Command interface so probably not too viable)
-        this.commandsMap.set(availableCommands.SET_COOLDOWN.name, new CooldownCommandBuilder())
-        this.commandsMap.set(availableCommands.ADD_FOLLOW.name, new FollowCommandBuilder())
+        this.commandsMap.set(availableCommands.SET_COOLDOWN.name, new CooldownCommandBuilder());
+        this.commandsMap.set(availableCommands.ADD_FOLLOW.name, new FollowCommandBuilder());
+        this.commandsMap.set(availableCommands.LIST_FOLLOWING.name, new ListCommandBuilder());
     };
 
     public readonly getCommand = (argv: Argv): Command | null => {
@@ -42,6 +43,7 @@ interface CommandBuilder<T extends Argv> {
 
 class FollowCommandBuilder implements CommandBuilder<FollowArgv> {
     readonly action: Action = "ADD_FOLLOW";
+
     public readonly build = (args: FollowArgv): Command => {
         const command: FollowCommand = {
             actionName: this.action,
@@ -55,6 +57,7 @@ class FollowCommandBuilder implements CommandBuilder<FollowArgv> {
 
 class CooldownCommandBuilder implements CommandBuilder<CooldownArgv> {
     readonly action: Action = "SET_COOLDOWN";
+
     public readonly build = (args: CooldownArgv): Command => {
         if (Array.isArray(args.duration)) {
             args.duration = args.duration[args.duration.length - 1];
@@ -67,6 +70,18 @@ class CooldownCommandBuilder implements CommandBuilder<CooldownArgv> {
         }
         return command
     }
+}
+
+class ListCommandBuilder implements CommandBuilder<Argv> {
+    readonly action: Action = "LIST_FOLLOWING";
+
+    public readonly build = (args: Argv): Command => {
+        return {
+            actionName: this.action,
+            arguments: {}
+        }
+    }
+
 }
 
 export { CommandFactory };

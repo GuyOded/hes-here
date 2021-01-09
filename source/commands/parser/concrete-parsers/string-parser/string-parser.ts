@@ -7,7 +7,6 @@ import { Observable, Subscriber } from "rxjs";
 import { CommandFactory } from "./command-builders";
 
 /** An interface that adds alias to the type @see ArgumentDescriptionEntry
- * (unfortunately argparse supports one alias only instead of an array of aliases) 
  */
 interface ArgparseEntry extends ArgumentDescriptionEntry { alias?: string[] }
 type RequiredArgparseEntry = Readonly<Required<ArgparseEntry>>
@@ -33,8 +32,12 @@ class ArgparserUtils {
 
         // TODO: Clean nestedness
         commandActions.forEach((action: string) => {
-            const argumentEntries: ArgumentsDescriptionDictionary<string, RequiredArgparseEntry> = argparseCommandTemplates[action as Action].argumentsDescription;
+            const argumentEntries: ArgumentsDescriptionDictionary<string, RequiredArgparseEntry> | undefined = argparseCommandTemplates[action as Action].argumentsDescription;
             yargs.command(argparseCommandTemplates[action as Action].name, "", (yargs: yargs.Argv) => {
+                if (!argumentEntries) {
+                    return;
+                }
+
                 for (let key in argparseCommandTemplates[action as Action].argumentsDescription) {
                     const demand: boolean = argumentEntries[key]?.mandatory ? true : false;
                     const defaultVal: any = argumentEntries[key]?.default ? argumentEntries[key]?.default : undefined;

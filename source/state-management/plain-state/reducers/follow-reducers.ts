@@ -1,9 +1,9 @@
 import { FollowArgs } from "../../../commands/templates";
 import { StateTemplate, UserState } from "../state-template";
-import { StateTemplateReducer, Action } from "../store";
+import { StateTemplateReducer, EnhancedCommand } from "../store";
 
 const followReducer: StateTemplateReducer = {
-    reduce: (action: Action, state: StateTemplate): StateTemplate => {
+    reduce: (action: EnhancedCommand, state: StateTemplate): StateTemplate => {
         if (action.actionName != "ADD_FOLLOW") {
             return state;
         }

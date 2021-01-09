@@ -1,11 +1,9 @@
-import { Action } from "../../state-management/plain-state/store";
+import { EnhancedCommand } from "../../state-management/plain-state/store";
 import { CooldownArgs } from "../templates";
 import { CommandVerifier, VerificationResult } from "./command-verifier";
-import { getRandomSuccessResult } from "./verification-utils";
-
 
 class CooldownVerifier implements CommandVerifier {
-    readonly verify = (action: Action): VerificationResult  => {
+    readonly verify = (action: EnhancedCommand): VerificationResult  => {
         const success: VerificationResult = {
             message: "",
             failure: false
@@ -30,4 +28,5 @@ class CooldownVerifier implements CommandVerifier {
 
 export {
     CooldownVerifier
-}
+};
+

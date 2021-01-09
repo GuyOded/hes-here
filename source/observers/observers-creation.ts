@@ -5,7 +5,7 @@ import { MessageObserver } from "./message-observer"
 import { filter } from "rxjs/operators";
 import * as PresenceFilters from "./filters/presence-filters";
 import * as MessageFilters from "./filters/message-filters";
-import { AppCommandStore } from "../state-management/plain-state/store";
+import { UserStateStore } from "../state-management/plain-state/store";
 import { CommandVerifier } from "../commands/verifiers/command-verifier";
 
 
@@ -39,7 +39,7 @@ const subscribePresenceObservers = (notificationMapping: NotificationMapping,
     return notifiedUsers;
 }
 
-const subscribeMessageObservers = (permittedUsers: User[], messageObservable: Observable<Message>, store: AppCommandStore,
+const subscribeMessageObservers = (permittedUsers: User[], messageObservable: Observable<Message>, store: UserStateStore,
     commandVerifier: CommandVerifier): void => {
     permittedUsers.forEach((permittedUser: User) => {
         const filteredMessageObservable: Observable<Message> = messageObservable.pipe(

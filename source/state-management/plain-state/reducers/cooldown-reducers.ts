@@ -1,9 +1,9 @@
 import { CooldownArgs } from "../../../commands/templates";
 import { StateTemplate, UserState } from "../state-template";
-import { Action, StateTemplateReducer } from "../store";
+import { EnhancedCommand, StateTemplateReducer } from "../store";
 
 const setCooldownReducer: StateTemplateReducer = {
-    reduce: (action: Action, state: StateTemplate): StateTemplate => {
+    reduce: (action: EnhancedCommand, state: StateTemplate): StateTemplate => {
         if (action.actionName != "SET_COOLDOWN") {
             return state;
         }

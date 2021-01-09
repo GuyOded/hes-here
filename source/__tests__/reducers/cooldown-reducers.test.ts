@@ -1,4 +1,4 @@
-import { Action } from "../../state-management/plain-state/store";
+import { EnhancedCommand } from "../../state-management/plain-state/store";
 import { CooldownArgs } from "../../commands/templates";
 import { StateTemplate } from "../../state-management/plain-state/state-template";
 import * as CooldownReducers from "../../state-management/plain-state/reducers/cooldown-reducers";
@@ -9,7 +9,7 @@ test("Should add new user state if the user never sent command", () => {
         duration: 7
     }
 
-    const action: Action = {
+    const action: EnhancedCommand = {
         invoker: "me",
         actionName: "SET_COOLDOWN",
         arguments: cooldownArgs
@@ -35,7 +35,7 @@ test("Should change cooldown if user already had a state", () => {
         duration: 7
     }
 
-    const action: Action = {
+    const action: EnhancedCommand = {
         invoker: "me",
         actionName: "SET_COOLDOWN",
         arguments: cooldownArgs
@@ -57,7 +57,7 @@ test("Should do nothing if action name is not SET_COOLDOWN", () => {
         duration: 7
     }
 
-    const action: Action = {
+    const action: EnhancedCommand = {
         invoker: "me",
         actionName: "ADD_FOLLOW",
         arguments: cooldownArgs

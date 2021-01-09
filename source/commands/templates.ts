@@ -1,3 +1,4 @@
+import { StrictOmit } from "../../source/utility/types"
 import { Command } from "./command"
 
 type ActionName = keyof CommandTemplates<any>
@@ -14,16 +15,23 @@ type ArgumentDescriptionEntry = {
     readonly mandatory?: boolean;
     readonly default?: any;
 }
+
 type ArgumentsDescriptionDictionary<T extends string, U extends ArgumentDescriptionEntry> = {
     [key in T]: U
 }
+type OptionalArgumentsDescriptionDictionary<T extends string, U extends ArgumentDescriptionEntry> = Partial<ArgumentsDescriptionDictionary<T, U>>;
+
 type CommandTemplateEntry<T extends string, U extends ArgumentDescriptionEntry> = {
     readonly name: string;
     readonly argumentsDescription: ArgumentsDescriptionDictionary<T, U>;
 }
+type OptionalArgumentsCommandTemplateEntry<T extends string, U extends ArgumentDescriptionEntry> = Partial<Pick<CommandTemplateEntry<T, U>, "argumentsDescription">>;
+type temp<T extends string, U extends ArgumentDescriptionEntry> = OptionalArgumentsCommandTemplateEntry<T, U> & StrictOmit<CommandTemplateEntry<T, U>, "argumentsDescription">;
+
 type CommandTemplates<U extends ArgumentDescriptionEntry> = {
-    readonly SET_COOLDOWN: CommandTemplateEntry<"duration", U>
-    readonly ADD_FOLLOW: CommandTemplateEntry<"members", U>
+    readonly SET_COOLDOWN: CommandTemplateEntry<"duration", U>,
+    readonly ADD_FOLLOW: CommandTemplateEntry<"members", U>,
+    readonly LIST_FOLLOWING: Pick<CommandTemplateEntry<"", U>, "name">
 }
 
 const availableCommands: CommandTemplates<ArgumentDescriptionEntry> = {
@@ -46,6 +54,9 @@ const availableCommands: CommandTemplates<ArgumentDescriptionEntry> = {
                 mandatory: true
             }
         }
+    },
+    LIST_FOLLOWING: {
+        name: "list"
     }
 }
 

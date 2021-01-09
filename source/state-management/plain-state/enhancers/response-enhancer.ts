@@ -1,8 +1,9 @@
+import { Guild } from "discord.js";
 import { EnhancedCommand, UserStateStore } from "../store";
 import { BaseEnhancer } from "./base-enhancer"
 
 class ResponseEnhancer extends BaseEnhancer {
-    constructor(store: UserStateStore) {
+    constructor(store: UserStateStore, guild: Guild) {
         super(store);
     }
 

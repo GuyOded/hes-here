@@ -14,9 +14,10 @@ interface CommandReducer<T> {
 type EnhancedCommand = Command & { invoker: Snowflake }
 type Listener = (state: StateTemplate) => unknown;
 type StateTemplateReducer = CommandReducer<StateTemplate>;
+type UserStateStore = CommandStore<StateTemplate>;
 
 // Store specification used for the app state
-class UserStateStore implements CommandStore<StateTemplate> {
+class UserStateStoreImpl implements UserStateStore {
     private static readonly DEFAULT_PASSING_LISTENER: Listener = () => { };
 
     private state: StateTemplate;
@@ -29,7 +30,7 @@ class UserStateStore implements CommandStore<StateTemplate> {
 
     constructor(reducers: StateTemplateReducer[],
         state: StateTemplate = [],
-        listener: Listener = UserStateStore.DEFAULT_PASSING_LISTENER) {
+        listener: Listener = UserStateStoreImpl.DEFAULT_PASSING_LISTENER) {
         this.state = state;
         this.reducers = reducers;
         this.listener = listener;
@@ -49,6 +50,7 @@ class UserStateStore implements CommandStore<StateTemplate> {
 
 export {
     UserStateStore,
+    UserStateStoreImpl,
     Listener,
     StateTemplateReducer,
     CommandStore,

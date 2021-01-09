@@ -1,11 +1,12 @@
 import { Guild, GuildMember } from "discord.js";
+import { config } from "../../../configuration/config";
 import { UserState } from "../state-template";
 import { EnhancedCommand, UserStateStore } from "../store";
 import { BaseEnhancer } from "./base-enhancer";
 
 class ResponseEnhancer extends BaseEnhancer {
     private readonly guild: Guild;
-    
+
     constructor(store: UserStateStore, guild: Guild) {
         super(store);
         this.guild = guild;
@@ -22,9 +23,10 @@ class ResponseEnhancer extends BaseEnhancer {
             const state: UserState | null = this.getUserState(action.invoker);
             if (!state) {
                 // TODO: Add tagged templates
-                guildMember.send(`Following: -\nDuration: \u221E`);
+                guildMember.send(`Following: -\nCooldown: \u221E`);
+            } else {
+                guildMember.send(`Following: ${state.following}\nCooldown: ${state.cooldown ? state.cooldown : config.notificationCooldown}`);
             }
-            guildMember.send(`Following: ${state?.following}\nDuration: ${state?.cooldown}`);
         }
 
         this.store.dispatch(action);
@@ -47,4 +49,8 @@ class ResponseEnhancer extends BaseEnhancer {
 
         return userState ? userState : null;
     }
+}
+
+export {
+    ResponseEnhancer
 }

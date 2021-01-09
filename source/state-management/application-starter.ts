@@ -1,17 +1,18 @@
 import { Client, Guild, Message, Presence, User } from "discord.js";
-import { ConfigurationParser } from "../configuration/configurer";
-import { config } from "../configuration/config";
 import { Subject } from "rxjs";
-import { PresenceDisplacement } from "../observers/presence-observer";
-import { AppStateService } from "./app-state-service";
-import { UserStateStore, Listener } from "./plain-state/store"
-import { followReducer } from "./plain-state/reducers/follow-reducers";
-import { StateTemplate } from "./plain-state/state-template";
-import { subscribeMessageObservers } from "../observers/observers-creation";
-import { AppStateFactory } from "./app-state-factory"
 import { CommandVerifier } from "../commands/verifiers/command-verifier";
 import { RootVerifier } from "../commands/verifiers/root-verifier";
+import { config } from "../configuration/config";
+import { ConfigurationParser } from "../configuration/configurer";
+import { subscribeMessageObservers } from "../observers/observers-creation";
+import { PresenceDisplacement } from "../observers/presence-observer";
+import { AppStateFactory } from "./app-state-factory";
+import { AppStateService } from "./app-state-service";
+import { ResponseEnhancer } from "./plain-state/enhancers/response-enhancer";
 import { setCooldownReducer } from "./plain-state/reducers/cooldown-reducers";
+import { followReducer } from "./plain-state/reducers/follow-reducers";
+import { StateTemplate } from "./plain-state/state-template";
+import { Listener, UserStateStore, UserStateStoreImpl } from "./plain-state/store";
 
 /* TODO: The application starter should send signals to other classes to start performing their job
    This logic should not be over complicated though. For now just perform logic that doesn't belong to this class here in separate methods */
@@ -40,7 +41,8 @@ class ApplicationStarter {
 
         this.client = client;
         // Create a method for the purpose of getting an empty store
-        this.store = new UserStateStore([followReducer, setCooldownReducer], [], this.storeListener);
+        const plainStore = new UserStateStoreImpl([followReducer, setCooldownReducer], [], this.storeListener);
+        this.store = new ResponseEnhancer(plainStore, heroesGuild);
         this.presenceSubject = new Subject<PresenceDisplacement>();
         this.appStateFactory = new AppStateFactory(heroesGuild, client.users, this.presenceSubject.asObservable());
         this.rootVerifier = new RootVerifier(heroesGuild);
@@ -82,4 +84,4 @@ class ApplicationStarter {
 
 export {
     ApplicationStarter
-}
+};

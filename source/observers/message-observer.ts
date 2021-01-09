@@ -2,15 +2,15 @@ import { Observer } from "rxjs";
 import { Message, User } from "discord.js";
 import { StringArgparser } from "../commands/parser/concrete-parsers/string-parser/string-parser";
 import { Command } from "../commands/command";
-import { Action, AppCommandStore } from "../state-management/plain-state/store";
+import { EnhancedCommand, UserStateStore } from "../state-management/plain-state/store";
 import { CommandVerifier, VerificationResult } from "../commands/verifiers/command-verifier";
 
 class MessageObserver implements Observer<Message> {
     private readonly user: User;
-    private readonly store: AppCommandStore;
+    private readonly store: UserStateStore;
     private readonly commandVerifier: CommandVerifier;
 
-    constructor(user: User, store: AppCommandStore, commandVerifier: CommandVerifier) {
+    constructor(user: User, store: UserStateStore, commandVerifier: CommandVerifier) {
         this.user = user;
         this.store = store;
         this.commandVerifier = commandVerifier;
@@ -41,7 +41,7 @@ class MessageObserver implements Observer<Message> {
     complete = (): void => { }
 
     private readonly onParsedCommand = (command: Command, message: Message) => {
-        const action: Action = {
+        const action: EnhancedCommand = {
             ...command,
             invoker: message.author.id
         }

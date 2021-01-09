@@ -1,8 +1,8 @@
-import { StrictOmit } from "../../source/utility/types"
-import { Command } from "./command"
+import { Command } from "./command";
+import { PickAsPartial } from "../utility/types";
 
-type ActionName = keyof CommandTemplates<any>
-type AvailableArgumentTypes = "string" | "number" | "array" | "boolean"
+type ActionName = keyof CommandTemplates<any>;
+type AvailableArgumentTypes = "string" | "number" | "array" | "boolean";
 
 /**
  * An interface representing the comprising properties of a command.
@@ -19,19 +19,17 @@ type ArgumentDescriptionEntry = {
 type ArgumentsDescriptionDictionary<T extends string, U extends ArgumentDescriptionEntry> = {
     [key in T]: U
 }
-type OptionalArgumentsDescriptionDictionary<T extends string, U extends ArgumentDescriptionEntry> = Partial<ArgumentsDescriptionDictionary<T, U>>;
 
 type CommandTemplateEntry<T extends string, U extends ArgumentDescriptionEntry> = {
     readonly name: string;
     readonly argumentsDescription: ArgumentsDescriptionDictionary<T, U>;
 }
-type OptionalArgumentsCommandTemplateEntry<T extends string, U extends ArgumentDescriptionEntry> = Partial<Pick<CommandTemplateEntry<T, U>, "argumentsDescription">>;
-type temp<T extends string, U extends ArgumentDescriptionEntry> = OptionalArgumentsCommandTemplateEntry<T, U> & StrictOmit<CommandTemplateEntry<T, U>, "argumentsDescription">;
+type OptionalArgumentsCommandTemplateEntry<T extends string, U extends ArgumentDescriptionEntry> = PickAsPartial<CommandTemplateEntry<T, U>, "argumentsDescription">;
 
 type CommandTemplates<U extends ArgumentDescriptionEntry> = {
     readonly SET_COOLDOWN: CommandTemplateEntry<"duration", U>,
     readonly ADD_FOLLOW: CommandTemplateEntry<"members", U>,
-    readonly LIST_FOLLOWING: Pick<CommandTemplateEntry<"", U>, "name">
+    readonly LIST_FOLLOWING: OptionalArgumentsCommandTemplateEntry<"", U>
 }
 
 const availableCommands: CommandTemplates<ArgumentDescriptionEntry> = {
@@ -68,7 +66,7 @@ type FollowArgs = {
 }
 
 interface CooldownCommand extends Command {
-    readonly arguments: CooldownArgs; 
+    readonly arguments: CooldownArgs;
 }
 interface FollowCommand extends Command {
     readonly arguments: FollowArgs;

@@ -3,15 +3,15 @@ import { Command } from "../../commands/command"
 import { StateTemplate } from "./state-template";
 
 interface CommandStore<T> {
-    dispatch(action: Action): void;
+    dispatch(action: EnhancedCommand): void;
     getState(): T;
 }
 
 interface CommandReducer<T> {
-    reduce(action: Action, state: T): T;
+    reduce(action: EnhancedCommand, state: T): T;
 }
 
-type Action = Command & { invoker: Snowflake }
+type EnhancedCommand = Command & { invoker: Snowflake }
 type Listener = (state: StateTemplate) => unknown;
 type StateTemplateReducer = CommandReducer<StateTemplate>;
 
@@ -35,7 +35,7 @@ class UserStateStore implements CommandStore<StateTemplate> {
         this.listener = listener;
     }
 
-    dispatch(action: Action): void {
+    dispatch(action: EnhancedCommand): void {
         this.state = this.reducers.reduce<StateTemplate>((previousState: StateTemplate, currentReducer: StateTemplateReducer) => {
             return currentReducer.reduce(action, previousState);
         }, this.state);
@@ -48,8 +48,9 @@ class UserStateStore implements CommandStore<StateTemplate> {
 }
 
 export {
-    UserStateStore as AppCommandStore,
+    UserStateStore,
     Listener,
     StateTemplateReducer,
-    Action
+    CommandStore,
+    EnhancedCommand
 }

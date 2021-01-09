@@ -4,7 +4,7 @@ import { config } from "../configuration/config";
 import { Subject } from "rxjs";
 import { PresenceDisplacement } from "../observers/presence-observer";
 import { AppStateService } from "./app-state-service";
-import { AppCommandStore, Listener } from "./plain-state/store"
+import { UserStateStore, Listener } from "./plain-state/store"
 import { followReducer } from "./plain-state/reducers/follow-reducers";
 import { StateTemplate } from "./plain-state/state-template";
 import { subscribeMessageObservers } from "../observers/observers-creation";
@@ -18,7 +18,7 @@ import { setCooldownReducer } from "./plain-state/reducers/cooldown-reducers";
 // TODO: Remove unnecessary logic from this class
 class ApplicationStarter {
     private readonly client: Client;
-    private readonly store: AppCommandStore;
+    private readonly store: UserStateStore;
     private readonly appStateFactory: AppStateFactory;
     private readonly presenceSubject: Subject<PresenceDisplacement>;
     private readonly rootVerifier: CommandVerifier;
@@ -40,7 +40,7 @@ class ApplicationStarter {
 
         this.client = client;
         // Create a method for the purpose of getting an empty store
-        this.store = new AppCommandStore([followReducer, setCooldownReducer], [], this.storeListener);
+        this.store = new UserStateStore([followReducer, setCooldownReducer], [], this.storeListener);
         this.presenceSubject = new Subject<PresenceDisplacement>();
         this.appStateFactory = new AppStateFactory(heroesGuild, client.users, this.presenceSubject.asObservable());
         this.rootVerifier = new RootVerifier(heroesGuild);

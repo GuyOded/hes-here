@@ -1,5 +1,5 @@
 import { Guild } from "discord.js";
-import { Action } from "../../state-management/plain-state/store";
+import { EnhancedCommand } from "../../state-management/plain-state/store";
 import { CommandVerifier, VerificationResult } from "./command-verifier";
 import { CooldownVerifier } from "./cooldown-verifier";
 import { FollowVerifier } from "./follow-verifier";
@@ -14,7 +14,7 @@ class RootVerifier implements CommandVerifier {
         this.verifiers.push(new CooldownVerifier());
     }
 
-    readonly verify = (action: Action): VerificationResult => {
+    readonly verify = (action: EnhancedCommand): VerificationResult => {
         let result: VerificationResult = getRandomSuccessResult();
 
         this.verifiers.find((verifier) => {

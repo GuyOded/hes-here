@@ -1,8 +1,7 @@
 import { Guild, GuildMember } from "discord.js";
-import { Action } from "../../state-management/plain-state/store";
+import { EnhancedCommand } from "../../state-management/plain-state/store";
 import { FollowArgs } from "../templates";
 import { CommandVerifier, VerificationResult } from "./command-verifier";
-import { getRandomSuccessResult } from "./verification-utils";
 
 class FollowVerifier implements CommandVerifier {
     private readonly guild: Guild;
@@ -11,7 +10,7 @@ class FollowVerifier implements CommandVerifier {
         this.guild = guild;
     }
 
-    public readonly verify = (action: Action): VerificationResult => {
+    public readonly verify = (action: EnhancedCommand): VerificationResult => {
         const success: VerificationResult = {
             failure: false,
             message: ""
@@ -41,4 +40,5 @@ class FollowVerifier implements CommandVerifier {
 
 export {
     FollowVerifier
-}
+};
+

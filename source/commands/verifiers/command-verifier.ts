@@ -1,7 +1,7 @@
-import { Action } from "../../state-management/plain-state/store";
+import { EnhancedCommand } from "../../state-management/plain-state/store";
 
 interface CommandVerifier {
-    verify(action: Action): VerificationResult;
+    verify(action: EnhancedCommand): VerificationResult;
 }
 
 type VerificationResult = {

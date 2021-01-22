@@ -2,6 +2,7 @@ import { FollowArgs, UnfollowArgs } from "../../../commands/templates";
 import { StateTemplate, UserState } from "../state-template";
 import { StateTemplateReducer, EnhancedCommand } from "../store";
 
+// TODO: Maybe replace all the cases where the entire array is copied to improve efficiency in the long run
 const followReducer: StateTemplateReducer = {
     reduce: (action: EnhancedCommand, state: StateTemplate): StateTemplate => {
         if (action.actionName !== "ADD_FOLLOW") {
@@ -65,5 +66,6 @@ const unfollowReducer: StateTemplateReducer = {
 }
 
 export {
-    followReducer
+    followReducer,
+    unfollowReducer
 }

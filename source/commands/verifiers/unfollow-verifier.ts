@@ -15,6 +15,11 @@ class UnfollowVerifier implements CommandVerifier {
             failure: false,
             message: ""
         };
+
+        if (action.actionName != "REMOVE_FOLLOW") {
+            return success;
+        }
+
         const invokerState: UserState | undefined = this.store.getState().find((userState: UserState) => {
             return userState.id === action.invoker;
         });

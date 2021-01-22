@@ -136,3 +136,30 @@ test("Unfollow user that is not followed should return the state with the follow
 
     expect(newState).toEqual(state);
 });
+
+// Naive case
+test("Unfollow user that is followed should remove him from the follow list", () => {
+    const state: StateTemplate = [
+        {
+            id: "me",
+            following: ["roynecro"]
+        }
+    ];
+
+    const newState: StateTemplate = FollowReducers.unfollowReducer.reduce({
+        invoker: "me",
+        actionName: "REMOVE_FOLLOW",
+        arguments: {
+            members: ["roynecro"]
+        } as UnfollowArgs
+    }, state);
+
+    const expectedState: StateTemplate = [
+        {
+            id: "me",
+            following: []
+        }
+    ];
+
+    expect(newState).toEqual(expectedState);
+})

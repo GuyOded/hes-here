@@ -15,7 +15,7 @@ type RequiredArgparseEntry = Readonly<Required<ArgparseEntry>>
  */
 class ArgparserUtils {
     private static readonly DESCRIPTION = "Gaspiseere shall help you achieve what you want!";
-    private static readonly PROG_NAME = "gaspiseere";
+    private static readonly PROG_NAME = "!";
     private static parserInstance: yargs.Argv;
 
     public static readonly getInstance = (): yargs.Argv => {

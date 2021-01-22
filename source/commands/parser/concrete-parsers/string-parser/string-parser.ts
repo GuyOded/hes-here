@@ -66,6 +66,7 @@ class ArgparserUtils {
         let yargsCommandTemplates: CommandTemplates<ArgparseEntry> = { ...availableCommands };
         yargsCommandTemplates.SET_COOLDOWN.argumentsDescription["duration"].alias = ["d"];
         yargsCommandTemplates.ADD_FOLLOW.argumentsDescription["members"].alias = ["m"];
+        yargsCommandTemplates.REMOVE_FOLLOW.argumentsDescription["members"].alias = ["m"];
         return yargsCommandTemplates as CommandTemplates<RequiredArgparseEntry>;
     }
 

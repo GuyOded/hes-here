@@ -29,7 +29,8 @@ type OptionalArgumentsCommandTemplateEntry<T extends string, U extends ArgumentD
 type CommandTemplates<U extends ArgumentDescriptionEntry> = {
     readonly SET_COOLDOWN: CommandTemplateEntry<"duration", U>,
     readonly ADD_FOLLOW: CommandTemplateEntry<"members", U>,
-    readonly LIST_FOLLOWING: OptionalArgumentsCommandTemplateEntry<"", U>
+    readonly LIST_FOLLOWING: OptionalArgumentsCommandTemplateEntry<"", U>,
+    readonly REMOVE_FOLLOW: CommandTemplateEntry<"members", U>
 }
 
 const availableCommands: CommandTemplates<ArgumentDescriptionEntry> = {
@@ -55,6 +56,16 @@ const availableCommands: CommandTemplates<ArgumentDescriptionEntry> = {
     },
     LIST_FOLLOWING: {
         name: "list"
+    },
+    REMOVE_FOLLOW: {
+        name: "unfollow",
+        argumentsDescription: {
+            "members": {
+                explanation: "Members you would like to unfollow",
+                type: "array",
+                default: []
+            }
+        }
     }
 }
 
@@ -64,12 +75,18 @@ type CooldownArgs = {
 type FollowArgs = {
     members: Array<string>;
 }
+type UnfollowArgs = {
+    members: Array<string>;
+}
 
 interface CooldownCommand extends Command {
     readonly arguments: CooldownArgs;
 }
 interface FollowCommand extends Command {
     readonly arguments: FollowArgs;
+}
+interface UnfollowCommand extends Command {
+    readonly arguments: UnfollowArgs;
 }
 
 export {
@@ -79,7 +96,9 @@ export {
     ArgumentsDescriptionDictionary,
     CooldownArgs,
     FollowArgs,
+    UnfollowArgs,
     CooldownCommand,
     FollowCommand,
+    UnfollowCommand,
     availableCommands
 }

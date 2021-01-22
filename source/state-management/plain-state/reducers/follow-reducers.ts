@@ -1,10 +1,10 @@
-import { FollowArgs } from "../../../commands/templates";
+import { FollowArgs, UnfollowArgs } from "../../../commands/templates";
 import { StateTemplate, UserState } from "../state-template";
 import { StateTemplateReducer, EnhancedCommand } from "../store";
 
 const followReducer: StateTemplateReducer = {
     reduce: (action: EnhancedCommand, state: StateTemplate): StateTemplate => {
-        if (action.actionName != "ADD_FOLLOW") {
+        if (action.actionName !== "ADD_FOLLOW") {
             return state;
         }
         const followActionArgs: FollowArgs = action.arguments as FollowArgs;
@@ -32,6 +32,20 @@ const followReducer: StateTemplateReducer = {
             id: action.invoker,
             following: flattenedFollowArgs.members
         });
+    }
+}
+
+const unfollowReducer: StateTemplateReducer = {
+    reduce: (action: EnhancedCommand, state: StateTemplate) => {
+        if (action.actionName !== "REMOVE_FOLLOW") {
+            return state;
+        }
+        const followActionArgs: UnfollowArgs = action.arguments as FollowArgs;
+        const flattenedFollowArgs: UnfollowArgs = {
+            ...followActionArgs,
+            // TODO: Write a utility function for removing duplicates
+            members: Array.from(new Set([...followActionArgs.members]))
+        }
     }
 }
 

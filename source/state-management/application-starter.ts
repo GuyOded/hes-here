@@ -10,7 +10,7 @@ import { AppStateFactory } from "./app-state-factory";
 import { AppStateService } from "./app-state-service";
 import { ResponseEnhancer } from "./plain-state/enhancers/response-enhancer";
 import { setCooldownReducer } from "./plain-state/reducers/cooldown-reducers";
-import { followReducer } from "./plain-state/reducers/follow-reducers";
+import { followReducer, unfollowReducer } from "./plain-state/reducers/follow-reducers";
 import { StateTemplate } from "./plain-state/state-template";
 import { Listener, UserStateStore, UserStateStoreImpl } from "./plain-state/store";
 
@@ -41,11 +41,11 @@ class ApplicationStarter {
 
         this.client = client;
         // Create a method for the purpose of getting an empty store
-        const plainStore = new UserStateStoreImpl([followReducer, setCooldownReducer], [], this.storeListener);
+        const plainStore: UserStateStore = new UserStateStoreImpl([followReducer, unfollowReducer, setCooldownReducer], [], this.storeListener);
         this.store = new ResponseEnhancer(plainStore, heroesGuild);
         this.presenceSubject = new Subject<PresenceDisplacement>();
         this.appStateFactory = new AppStateFactory(heroesGuild, client.users, this.presenceSubject.asObservable());
-        this.rootVerifier = new RootVerifier(heroesGuild);
+        this.rootVerifier = new RootVerifier(heroesGuild, this.store);
         this.appStateService = new AppStateService({ presenceObserversSubscriptions: [] });
     }
 

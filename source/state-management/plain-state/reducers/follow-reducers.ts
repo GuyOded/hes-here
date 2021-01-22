@@ -1,10 +1,11 @@
-import { FollowArgs } from "../../../commands/templates";
+import { FollowArgs, UnfollowArgs } from "../../../commands/templates";
 import { StateTemplate, UserState } from "../state-template";
 import { StateTemplateReducer, EnhancedCommand } from "../store";
 
+// TODO: Maybe replace all the cases where the entire array is copied to improve efficiency in the long run
 const followReducer: StateTemplateReducer = {
     reduce: (action: EnhancedCommand, state: StateTemplate): StateTemplate => {
-        if (action.actionName != "ADD_FOLLOW") {
+        if (action.actionName !== "ADD_FOLLOW") {
             return state;
         }
         const followActionArgs: FollowArgs = action.arguments as FollowArgs;
@@ -35,6 +36,36 @@ const followReducer: StateTemplateReducer = {
     }
 }
 
+const unfollowReducer: StateTemplateReducer = {
+    reduce: (action: EnhancedCommand, state: StateTemplate) => {
+        if (action.actionName !== "REMOVE_FOLLOW") {
+            return state;
+        }
+        const unfollowActionArgs: UnfollowArgs = action.arguments as FollowArgs;
+        const flattenedUnfollowArgs: UnfollowArgs = {
+            ...unfollowActionArgs,
+            // TODO: Write a utility function for removing duplicates
+            members: Array.from(new Set([...unfollowActionArgs.members]))
+        }
+
+        
+        let newState: StateTemplate = [...state];
+        const userStateIndex: number = newState.findIndex((userState: UserState) => {
+            return userState.id === action.invoker;
+        });
+        if (userStateIndex === -1) {
+            return state;
+        }
+
+        newState[userStateIndex].following = newState[userStateIndex].following.filter((currentlyFollowing: string) => {
+            return !flattenedUnfollowArgs.members.includes(currentlyFollowing);
+        });
+
+        return newState;
+    }
+}
+
 export {
-    followReducer
+    followReducer,
+    unfollowReducer
 }

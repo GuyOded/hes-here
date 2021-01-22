@@ -15,7 +15,7 @@ type RequiredArgparseEntry = Readonly<Required<ArgparseEntry>>
  */
 class ArgparserUtils {
     private static readonly DESCRIPTION = "Gaspiseere shall help you achieve what you want!";
-    private static readonly PROG_NAME = "gaspiseere";
+    private static readonly PROG_NAME = "!";
     private static parserInstance: yargs.Argv;
 
     public static readonly getInstance = (): yargs.Argv => {
@@ -66,6 +66,7 @@ class ArgparserUtils {
         let yargsCommandTemplates: CommandTemplates<ArgparseEntry> = { ...availableCommands };
         yargsCommandTemplates.SET_COOLDOWN.argumentsDescription["duration"].alias = ["d"];
         yargsCommandTemplates.ADD_FOLLOW.argumentsDescription["members"].alias = ["m"];
+        yargsCommandTemplates.REMOVE_FOLLOW.argumentsDescription["members"].alias = ["m"];
         return yargsCommandTemplates as CommandTemplates<RequiredArgparseEntry>;
     }
 
@@ -112,4 +113,9 @@ export class StringArgparser implements CommandParser {
     private static readonly stripProgName = (argline: string): string => {
         return argline.substring(ArgparserUtils.getProgName().length).trimLeft()
     }
+}
+
+const PREFIX = ArgparserUtils.getProgName();
+export {
+    PREFIX
 }

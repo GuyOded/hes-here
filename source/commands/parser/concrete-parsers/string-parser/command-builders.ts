@@ -1,5 +1,5 @@
 import { Command } from "../../../command";
-import { Action, availableCommands, CooldownArgs, CooldownCommand, FollowArgs, FollowCommand } from "../../../templates";
+import { Action, availableCommands, CooldownArgs, CooldownCommand, FollowArgs, FollowCommand, UnfollowCommand } from "../../../templates";
 
 type Argv = {
     [argName: string]: unknown,
@@ -22,6 +22,7 @@ class CommandFactory {
         this.commandsMap.set(availableCommands.SET_COOLDOWN.name, new CooldownCommandBuilder());
         this.commandsMap.set(availableCommands.ADD_FOLLOW.name, new FollowCommandBuilder());
         this.commandsMap.set(availableCommands.LIST_FOLLOWING.name, new ListCommandBuilder());
+        this.commandsMap.set(availableCommands.REMOVE_FOLLOW.name, new UnfollowCommandBuilder());
     };
 
     public readonly getCommand = (argv: Argv): Command | null => {
@@ -46,6 +47,20 @@ class FollowCommandBuilder implements CommandBuilder<FollowArgv> {
 
     public readonly build = (args: FollowArgv): Command => {
         const command: FollowCommand = {
+            actionName: this.action,
+            arguments: {
+                members: args.members.map((memberName: string) => { return memberName.toLowerCase() })
+            }
+        }
+        return command;
+    }
+}
+
+class UnfollowCommandBuilder implements CommandBuilder<FollowArgv> {
+    readonly action: Action = "REMOVE_FOLLOW";
+
+    public readonly build = (args: FollowArgv): Command => {
+        const command: UnfollowCommand = {
             actionName: this.action,
             arguments: {
                 members: args.members.map((memberName: string) => { return memberName.toLowerCase() })

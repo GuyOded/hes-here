@@ -114,3 +114,8 @@ export class StringArgparser implements CommandParser {
         return argline.substring(ArgparserUtils.getProgName().length).trimLeft()
     }
 }
+
+const PREFIX = ArgparserUtils.getProgName();
+export {
+    PREFIX
+}

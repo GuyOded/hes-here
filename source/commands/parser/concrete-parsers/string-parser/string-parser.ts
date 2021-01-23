@@ -53,7 +53,7 @@ class ArgparserUtils {
                 }
             })
         })
-        yargs.demandCommand()
+        yargs.demandCommand(1, "Please provide at least one command to proceed")
             .scriptName(ArgparserUtils.PROG_NAME)
             .strict()
             .usage(`${ArgparserUtils.PROG_NAME} <command>\n${ArgparserUtils.DESCRIPTION}`)
@@ -100,18 +100,18 @@ export class StringArgparser implements CommandParser {
 
                 const command: Command | null = new CommandFactory().getCommand(argv)
                 if (!command) {
-                    throw new TypeError(`Command: ${this.argline} was unparsable and uncaught in yargs validation`)
+                    throw new TypeError(`Command: ${this.argline} was unparsable and uncaught in yargs validation`);
                 }
 
                 subscriber.next(command);
                 subscriber.complete();
             })
         })
-        return source
+        return source;
     }
 
     private static readonly stripProgName = (argline: string): string => {
-        return argline.substring(ArgparserUtils.getProgName().length).trimLeft()
+        return argline.substring(ArgparserUtils.getProgName().length).trimLeft();
     }
 }
 

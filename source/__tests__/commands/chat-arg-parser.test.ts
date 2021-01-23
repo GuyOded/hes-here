@@ -1,4 +1,4 @@
-import { Action, availableCommands, CooldownCommand, FollowCommand } from "../../commands/templates";
+import { Action, availableCommands, CooldownCommand, FollowArgs, FollowCommand } from "../../commands/templates";
 import { StringArgparser } from "../../commands/parser/concrete-parsers/string-parser/string-parser";
 import { Command } from "../../commands/command";
 import { PREFIX } from "../../commands/parser/concrete-parsers/string-parser/string-parser";
@@ -11,9 +11,10 @@ test('Test general help message', () => {
             error = err.message
         }
     })
-    expect(error).toEqual(expect.stringContaining(availableCommands.SET_COOLDOWN.name))
-    expect(error).toEqual(expect.stringContaining(availableCommands.ADD_FOLLOW.name))
-    expect(error).toEqual(expect.stringContaining(availableCommands.LIST_FOLLOWING.name))
+    expect(error).toEqual(expect.stringContaining(availableCommands.SET_COOLDOWN.name));
+    expect(error).toEqual(expect.stringContaining(availableCommands.ADD_FOLLOW.name));
+    expect(error).toEqual(expect.stringContaining(availableCommands.LIST_FOLLOWING.name));
+    expect(error).toEqual(expect.stringContaining(availableCommands.REMOVE_FOLLOW.name))
 })
 
 test('Test follow command help message', () => {
@@ -115,7 +116,7 @@ test('Should emit error when no arguments', () => {
     let parser: StringArgparser = new StringArgparser(`${PREFIX}`);
     parser.parse().subscribe({
         error: (err: Error) => {
-            expect(err.message).toEqual(expect.stringContaining("got 0, need at least 1"));
+            expect(err.message).toEqual(expect.stringContaining("Please provide at least one command to proceed"));
         }
     })
 })
@@ -147,6 +148,57 @@ test('Should return list command', () => {
         },
         next: (command: Command) => {
             expect(command.actionName).toEqual(listAction);
+        }
+    })
+})
+
+test("Providing non-alpha username should return command with the number as string", () => {
+    const parser: StringArgparser = new StringArgparser(`${PREFIX}follow -m 10`);
+    parser.parse().subscribe({
+        error: (err: Error) => {
+            fail(`Error should not be thrown ${err}`)
+        },
+        next: (command: Command) => {
+            const args = command.arguments as FollowArgs;
+            expect(typeof args.members[0] === "string").toBeTruthy();
+        }
+    })
+})
+
+test("Providing non-alpha username to follow should return command with the number as string", () => {
+    const parser: StringArgparser = new StringArgparser(`${PREFIX}follow -m 10`);
+    parser.parse().subscribe({
+        error: (err: Error) => {
+            fail(`Error should not be thrown ${err}`)
+        },
+        next: (command: Command) => {
+            const args = command.arguments as FollowArgs;
+            expect(typeof args.members[0] === "string").toBeTruthy();
+        }
+    })
+})
+
+test("Providing non-alpha username to unfollow should return command with the number as string", () => {
+    const parser: StringArgparser = new StringArgparser(`${PREFIX}unfollow -m 10`);
+    parser.parse().subscribe({
+        error: (err: Error) => {
+            fail(`Error should not be thrown ${err}`)
+        },
+        next: (command: Command) => {
+            const args = command.arguments as FollowArgs;
+            expect(typeof args.members[0] === "string").toBeTruthy();
+        }
+    })
+})
+
+test("Providing non-existent command should fail with help message", () => {
+    const parser: StringArgparser = new StringArgparser(`${PREFIX}non-existent`);
+    parser.parse().subscribe({
+        error: (err: Error) => {
+            expect(err.message).toEqual(expect.stringContaining("Unknown argument: non-existent"));
+        },
+        next: (command: Command) => {
+            fail(`No command should be generated! Command: ${command}`)
         }
     })
 })

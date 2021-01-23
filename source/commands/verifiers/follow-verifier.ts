@@ -27,13 +27,22 @@ class FollowVerifier implements CommandVerifier {
             })
         });
 
-        if (unknownMembers.length === 0) {
+        if (unknownMembers.length == 0) {
             return success;
+        }
+
+        // Customize message based on input
+        let message: string = `My apologies, but following ${unknownMembers} is beyond my reach.`;
+        const numericUsernames: string[] = unknownMembers.filter((memberName: string) => {
+            return /^\d+$/.test(memberName);
+        });
+        if (numericUsernames.length != 0) {
+            message += ` (What the hell kind of name is ${numericUsernames[0]} anyway?)`;
         }
 
         return {
             failure: true,
-            message: `My apologies, but following ${unknownMembers} is beyond my reach.`
+            message: message
         }
     }
 }

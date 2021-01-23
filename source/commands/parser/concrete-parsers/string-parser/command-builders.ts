@@ -1,5 +1,6 @@
 import { Command } from "../../../command";
 import { Action, availableCommands, CooldownArgs, CooldownCommand, FollowArgs, FollowCommand, UnfollowCommand } from "../../../templates";
+import * as StringUtils from "../../../../utility/string-utils";
 
 type Argv = {
     [argName: string]: unknown,
@@ -49,7 +50,7 @@ class FollowCommandBuilder implements CommandBuilder<FollowArgv> {
         const command: FollowCommand = {
             actionName: this.action,
             arguments: {
-                members: args.members.map((memberName: string) => { return memberName.toLowerCase() })
+                members: StringUtils.convertStringArrayToLower(args.members)
             }
         }
         return command;
@@ -63,7 +64,7 @@ class UnfollowCommandBuilder implements CommandBuilder<FollowArgv> {
         const command: UnfollowCommand = {
             actionName: this.action,
             arguments: {
-                members: args.members.map((memberName: string) => { return memberName.toLowerCase() })
+                members: StringUtils.convertStringArrayToLower(args.members)
             }
         }
         return command;

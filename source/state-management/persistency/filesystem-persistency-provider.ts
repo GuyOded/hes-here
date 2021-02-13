@@ -6,21 +6,25 @@ import * as fs from "fs";
 class FileSystemPersistencyProvider implements PersistencyProvider {
     private readonly fullFilePath: string;
 
-    constructor(fileName: string, directoryPath = os.tmpdir()) {
+    constructor(fileName: string = "", directoryPath = os.tmpdir()) {
         if (!fs.existsSync(directoryPath)) {
             throw new Error(`Provided path ${directoryPath} does not exist in the system`);
         }
         const verifiedDirPath: string = directoryPath;
 
-        // TODO: This class is not going to be used but maybe solve path traversal issues?
-        this.fullFilePath = path.resolve(verifiedDirPath, fileName);
+        const fullFilePath: string = path.resolve(verifiedDirPath, fileName);
+        if (path.dirname(fullFilePath) != verifiedDirPath) {
+            throw new Error(`Traversing beyond the given directory ${verifiedDirPath} is not allowed`);
+        }
+
+        this.fullFilePath = fullFilePath;
     }
 
     public readonly updateOrCreate = (data: string): boolean => {
         try {
             fs.writeFileSync(this.fullFilePath, data, "w+");
         } catch (err: unknown) {
-            console.error(`Unable to update or create persistent object: ${err}`)
+            console.error(`Unable to update or create file: ${err}`)
             return false;
         }
 
@@ -28,6 +32,14 @@ class FileSystemPersistencyProvider implements PersistencyProvider {
     }
 
     public readonly fetch = (): string => {
-        return "";
+        let data: Buffer;
+        try {
+            data = fs.readFileSync(this.fullFilePath);
+        } catch (err: unknown) {
+            console.error(`Unable to read file: ${err}`);
+            throw err;
+        }
+
+        return data.toString();
     }
 }

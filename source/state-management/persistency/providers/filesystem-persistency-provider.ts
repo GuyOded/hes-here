@@ -6,7 +6,8 @@ import * as fs from "fs";
 class FileSystemPersistencyProvider implements PersistencyProvider {
     private readonly fullFilePath: string;
 
-    constructor(fileName: string = "", directoryPath = os.tmpdir()) {
+    constructor(fileName: string = "data", directoryPath = os.tmpdir()) {
+        directoryPath = path.resolve(directoryPath);
         if (!fs.existsSync(directoryPath)) {
             throw new Error(`Provided path ${directoryPath} does not exist in the system`);
         }
@@ -22,7 +23,7 @@ class FileSystemPersistencyProvider implements PersistencyProvider {
 
     public readonly updateOrCreate = (data: string): boolean => {
         try {
-            fs.writeFileSync(this.fullFilePath, data, "w+");
+            fs.writeFileSync(this.fullFilePath, data, { flag: "w+" });
         } catch (err: unknown) {
             console.error(`Unable to update or create file: ${err}`)
             return false;
@@ -42,4 +43,8 @@ class FileSystemPersistencyProvider implements PersistencyProvider {
 
         return data.toString();
     }
+}
+
+export {
+    FileSystemPersistencyProvider
 }

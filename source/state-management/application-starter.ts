@@ -22,12 +22,12 @@ import { Listener, UserStateStore, UserStateStoreImpl } from "./plain-state/stor
 // TODO: Remove unnecessary logic from this class
 class ApplicationStarter {
     private readonly client: Client;
-    private readonly store: UserStateStore;
     private readonly appStateFactory: AppStateFactory;
     private readonly presenceSubject: Subject<PresenceDisplacement>;
-    private readonly rootVerifier: CommandVerifier;
     private readonly persister: JsonPersister;
-    private appStateService: AppStateService;
+    private store: UserStateStore | undefined;
+    private rootVerifier: CommandVerifier | undefined;
+    private appStateService: AppStateService | undefined;
 
     constructor(client: Client) {
         if (!client.readyAt) {
@@ -50,7 +50,7 @@ class ApplicationStarter {
         console.debug(`Initializing persistency...`);
         let persistencyProvider: PersistencyProvider; 
         try {
-            persistencyProvider = new S3PersistencyProvider("gaspiseere-state", this.onPersisterReady);
+            persistencyProvider = new S3PersistencyProvider("gaspiseere-state", () => this.onPersisterReady(heroesGuild));
         } catch (error: unknown) {
             console.warn("Unable to initialize persistency provider properly");
             throw error;
@@ -60,15 +60,11 @@ class ApplicationStarter {
         this.persister = new JsonPersister(persistencyProvider);
 
         // Create a method for the purpose of getting an empty store
-        const plainStore: UserStateStore = new UserStateStoreImpl([followReducer, unfollowReducer, setCooldownReducer], [], this.storeListener);
-        this.store = new ResponseEnhancer(plainStore, heroesGuild);
         this.presenceSubject = new Subject<PresenceDisplacement>();
         this.appStateFactory = new AppStateFactory(heroesGuild, client.users, this.presenceSubject.asObservable());
-        this.rootVerifier = new RootVerifier(heroesGuild, this.store);
-        this.appStateService = new AppStateService({ presenceObserversSubscriptions: [] });
     }
 
-    public readonly run = (): void => {
+    private readonly run = (): void => {
         console.log("Greetings from Gaspiseere!");
         const configuration: ConfigurationParser = new ConfigurationParser(this.client);
         console.log(`To your request, the following configuration is interpreted:\n${JSON.stringify(config, null, 2)}`);
@@ -88,7 +84,7 @@ class ApplicationStarter {
         });
 
         const messageSubject: Subject<Message> = new Subject();
-        subscribeMessageObservers(configuration.getCLIPermittedUsers(), messageSubject.asObservable(), this.store, this.rootVerifier);
+        subscribeMessageObservers(configuration.getCLIPermittedUsers(), messageSubject.asObservable(), this.store!, this.rootVerifier!);
         this.client.on("message", (message: Message) => {
             messageSubject.next(message);
         });
@@ -96,17 +92,20 @@ class ApplicationStarter {
 
     // TODO: Probably shouldn't be here
     private readonly storeListener: Listener = (plainState: StateTemplate): void => {
-        this.appStateService.destroy();
+        this.appStateService!.destroy();
         this.appStateService = new AppStateService(this.appStateFactory.translatePlainState(plainState));
         this.persister.persist(plainState);
     }
 
-    private readonly onPersisterReady = (): void => {
+    private readonly onPersisterReady = (heroesGuild: Guild): void => {
         const persistedData = this.persister.getData();
         const initialState: StateTemplate = !persistedData ? [] : persistedData as StateTemplate;
         console.debug(`Application state was initialized successfully from persistence`);
-        this.appStateService.destroy();
-        this.appStateService = new AppStateService(this.appStateFactory.translatePlainState(initialState));
+        const plainStore: UserStateStore = new UserStateStoreImpl([followReducer, unfollowReducer, setCooldownReducer], initialState, this.storeListener);
+        this.store = new ResponseEnhancer(plainStore, heroesGuild);
+        this.rootVerifier = new RootVerifier(heroesGuild, this.store);
+        this.appStateService = new AppStateService({ presenceObserversSubscriptions: [] });
+        this.run();
     }
 }
 

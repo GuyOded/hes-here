@@ -21,5 +21,4 @@ client.login(auth.token).catch((reason: any) => {
 
 client.once("ready", () => {
     const appStarter: ApplicationStarter = new ApplicationStarter(client);
-    appStarter.run();
 })

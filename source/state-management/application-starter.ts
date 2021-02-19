@@ -8,6 +8,9 @@ import { subscribeMessageObservers } from "../observers/observers-creation";
 import { PresenceDisplacement } from "../observers/presence-observer";
 import { AppStateFactory } from "./app-state-factory";
 import { AppStateService } from "./app-state-service";
+import { JsonPersister } from "./persistency/data-persisters/json-persister";
+import { PersistencyProvider } from "./persistency/providers/persistency-provider";
+import { S3PersistencyProvider } from "./persistency/providers/s3-persistency-provider";
 import { ResponseEnhancer } from "./plain-state/enhancers/response-enhancer";
 import { setCooldownReducer } from "./plain-state/reducers/cooldown-reducers";
 import { followReducer, unfollowReducer } from "./plain-state/reducers/follow-reducers";
@@ -23,6 +26,7 @@ class ApplicationStarter {
     private readonly appStateFactory: AppStateFactory;
     private readonly presenceSubject: Subject<PresenceDisplacement>;
     private readonly rootVerifier: CommandVerifier;
+    private readonly persister: JsonPersister;
     private appStateService: AppStateService;
 
     constructor(client: Client) {
@@ -39,10 +43,23 @@ class ApplicationStarter {
             throw new Error(`Unable to find guild '${config.serverName}'`);
         }
 
+        // TODO: Move all this code to a dependency injection initialization area
+        // Ugly but necessary... Wait until s3 is library is initialized
+        // TODO: Maybe it is worth creating an asynchronos version to persistency provider and create a spcification for such in JsonPersiste?
+        // TODO: Check if there is a dedicated lock object in javascript (though I doubt it)
+        let lock: boolean = true;
+        const persistencyProvider: PersistencyProvider = new S3PersistencyProvider("gaspiseere-state", () => { lock = false });
+        while (lock);
+
         this.client = client;
+
+        this.persister = new JsonPersister(persistencyProvider);
+        const persistedData = this.persister.getData();
+        const initialState: StateTemplate = !persistedData ? [] : persistedData as StateTemplate
         // Create a method for the purpose of getting an empty store
-        const plainStore: UserStateStore = new UserStateStoreImpl([followReducer, unfollowReducer, setCooldownReducer], [], this.storeListener);
+        const plainStore: UserStateStore = new UserStateStoreImpl([followReducer, unfollowReducer, setCooldownReducer], initialState, this.storeListener);
         this.store = new ResponseEnhancer(plainStore, heroesGuild);
+
         this.presenceSubject = new Subject<PresenceDisplacement>();
         this.appStateFactory = new AppStateFactory(heroesGuild, client.users, this.presenceSubject.asObservable());
         this.rootVerifier = new RootVerifier(heroesGuild, this.store);

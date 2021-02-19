@@ -1,5 +1,5 @@
 import { Guild, GuildMember } from "discord.js";
-import { config } from "../../../configuration/config";
+import { config } from "../../../configuration/app-config";
 import { UserState } from "../state-template";
 import { EnhancedCommand, UserStateStore } from "../store";
 import { BaseEnhancer } from "./base-enhancer";

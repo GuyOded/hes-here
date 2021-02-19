@@ -4,7 +4,7 @@ import { Guild, User, Snowflake as string, UserManager, GuildMember } from "disc
 import { NotificationMapping, subscribePresenceObservers } from "../observers/observers-creation";
 import { Observable } from "rxjs";
 import { PresenceDisplacement } from "../observers/presence-observer";
-import { config } from "../configuration/config";
+import { config } from "../configuration/app-config";
 
 class AppStateFactory {
     private readonly guild: Guild; // TODO: Maybe GuildMemberManager is a better option?

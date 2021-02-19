@@ -2,12 +2,15 @@ import { Client, Guild, Message, Presence, User } from "discord.js";
 import { Subject } from "rxjs";
 import { CommandVerifier } from "../commands/verifiers/command-verifier";
 import { RootVerifier } from "../commands/verifiers/root-verifier";
-import { config } from "../configuration/config";
+import { config } from "../configuration/app-config";
 import { ConfigurationParser } from "../configuration/configurer";
 import { subscribeMessageObservers } from "../observers/observers-creation";
 import { PresenceDisplacement } from "../observers/presence-observer";
 import { AppStateFactory } from "./app-state-factory";
 import { AppStateService } from "./app-state-service";
+import { JsonPersister } from "./persistency/data-persisters/json-persister";
+import { PersistencyProvider } from "./persistency/providers/persistency-provider";
+import { S3PersistencyProvider } from "./persistency/providers/s3-persistency-provider";
 import { ResponseEnhancer } from "./plain-state/enhancers/response-enhancer";
 import { setCooldownReducer } from "./plain-state/reducers/cooldown-reducers";
 import { followReducer, unfollowReducer } from "./plain-state/reducers/follow-reducers";
@@ -23,6 +26,7 @@ class ApplicationStarter {
     private readonly appStateFactory: AppStateFactory;
     private readonly presenceSubject: Subject<PresenceDisplacement>;
     private readonly rootVerifier: CommandVerifier;
+    private readonly persister: JsonPersister;
     private appStateService: AppStateService;
 
     constructor(client: Client) {
@@ -39,7 +43,22 @@ class ApplicationStarter {
             throw new Error(`Unable to find guild '${config.serverName}'`);
         }
 
+        // TODO: Move all this code to a dependency injection initialization area
+        // Ugly but necessary... Wait until s3 is library is initialized
+        // TODO: Maybe it is worth creating an asynchronos version to persistency provider and create a spcification for such in JsonPersiste?
+        // TODO: Check if there is a dedicated lock object in javascript (though I doubt it)
+        console.debug(`Initializing persistency...`);
+        let persistencyProvider: PersistencyProvider; 
+        try {
+            persistencyProvider = new S3PersistencyProvider("gaspiseere-state", this.onPersisterReady);
+        } catch (error: unknown) {
+            console.warn("Unable to initialize persistency provider properly");
+            throw error;
+        }
+        
         this.client = client;
+        this.persister = new JsonPersister(persistencyProvider);
+
         // Create a method for the purpose of getting an empty store
         const plainStore: UserStateStore = new UserStateStoreImpl([followReducer, unfollowReducer, setCooldownReducer], [], this.storeListener);
         this.store = new ResponseEnhancer(plainStore, heroesGuild);
@@ -79,6 +98,15 @@ class ApplicationStarter {
     private readonly storeListener: Listener = (plainState: StateTemplate): void => {
         this.appStateService.destroy();
         this.appStateService = new AppStateService(this.appStateFactory.translatePlainState(plainState));
+        this.persister.persist(plainState);
+    }
+
+    private readonly onPersisterReady = (): void => {
+        const persistedData = this.persister.getData();
+        const initialState: StateTemplate = !persistedData ? [] : persistedData as StateTemplate;
+        console.debug(`Application state was initialized successfully from persistence`);
+        this.appStateService.destroy();
+        this.appStateService = new AppStateService(this.appStateFactory.translatePlainState(initialState));
     }
 }
 

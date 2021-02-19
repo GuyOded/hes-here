@@ -1,12 +1,9 @@
 import { Command } from "../../../command";
 import { Action, availableCommands, CooldownArgs, CooldownCommand, FollowArgs, FollowCommand, UnfollowCommand } from "../../../templates";
 import * as StringUtils from "../../../../utility/string-utils";
+import { Arguments } from "yargs";
 
-type Argv = {
-    [argName: string]: unknown,
-    _: string[],
-    $0: string
-}
+type Argv = Arguments
 
 type CooldownArgv = CooldownArgs & Argv;
 type FollowArgv = FollowArgs & Argv;

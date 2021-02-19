@@ -1,5 +1,5 @@
 import { Client, Guild, GuildMember, User } from "discord.js"
-import { config, NotificationMapping } from "./config"
+import { config, NotificationMapping } from "./app-config"
 
 // TODO: Turn class to an insanciable object. The discord client can be a dependency for this class in addition to the whole
 // config object.

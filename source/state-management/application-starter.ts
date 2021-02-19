@@ -47,19 +47,21 @@ class ApplicationStarter {
         // Ugly but necessary... Wait until s3 is library is initialized
         // TODO: Maybe it is worth creating an asynchronos version to persistency provider and create a spcification for such in JsonPersiste?
         // TODO: Check if there is a dedicated lock object in javascript (though I doubt it)
-        let lock: boolean = true;
-        const persistencyProvider: PersistencyProvider = new S3PersistencyProvider("gaspiseere-state", () => { lock = false });
-        while (lock);
-
+        console.debug(`Initializing persistency...`);
+        let persistencyProvider: PersistencyProvider; 
+        try {
+            persistencyProvider = new S3PersistencyProvider("gaspiseere-state", this.onPersisterReady);
+        } catch (error: unknown) {
+            console.warn("Unable to initialize persistency provider properly");
+            throw error;
+        }
+        
         this.client = client;
-
         this.persister = new JsonPersister(persistencyProvider);
-        const persistedData = this.persister.getData();
-        const initialState: StateTemplate = !persistedData ? [] : persistedData as StateTemplate
-        // Create a method for the purpose of getting an empty store
-        const plainStore: UserStateStore = new UserStateStoreImpl([followReducer, unfollowReducer, setCooldownReducer], initialState, this.storeListener);
-        this.store = new ResponseEnhancer(plainStore, heroesGuild);
 
+        // Create a method for the purpose of getting an empty store
+        const plainStore: UserStateStore = new UserStateStoreImpl([followReducer, unfollowReducer, setCooldownReducer], [], this.storeListener);
+        this.store = new ResponseEnhancer(plainStore, heroesGuild);
         this.presenceSubject = new Subject<PresenceDisplacement>();
         this.appStateFactory = new AppStateFactory(heroesGuild, client.users, this.presenceSubject.asObservable());
         this.rootVerifier = new RootVerifier(heroesGuild, this.store);
@@ -96,6 +98,15 @@ class ApplicationStarter {
     private readonly storeListener: Listener = (plainState: StateTemplate): void => {
         this.appStateService.destroy();
         this.appStateService = new AppStateService(this.appStateFactory.translatePlainState(plainState));
+        this.persister.persist(plainState);
+    }
+
+    private readonly onPersisterReady = (): void => {
+        const persistedData = this.persister.getData();
+        const initialState: StateTemplate = !persistedData ? [] : persistedData as StateTemplate;
+        console.debug(`Application state was initialized successfully from persistence`);
+        this.appStateService.destroy();
+        this.appStateService = new AppStateService(this.appStateFactory.translatePlainState(initialState));
     }
 }
 

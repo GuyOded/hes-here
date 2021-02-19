@@ -2,7 +2,7 @@ import { Client, Guild, Message, Presence, User } from "discord.js";
 import { Subject } from "rxjs";
 import { CommandVerifier } from "../commands/verifiers/command-verifier";
 import { RootVerifier } from "../commands/verifiers/root-verifier";
-import { config } from "../configuration/config";
+import { config } from "../configuration/app-config";
 import { ConfigurationParser } from "../configuration/configurer";
 import { subscribeMessageObservers } from "../observers/observers-creation";
 import { PresenceDisplacement } from "../observers/presence-observer";

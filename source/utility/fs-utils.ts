@@ -14,7 +14,7 @@ const generateTempFileName = (): string => {
     const LENGTH = 15;
     const randomBuffer: Buffer = crypto.randomBytes(LENGTH);
 
-    return randomBuffer.toString("base64");
+    return randomBuffer.toString("base64").replace(/\//gi, "");
 }
 
 export {

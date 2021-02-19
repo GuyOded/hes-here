@@ -1,8 +1,10 @@
 import { PersistencyProvider } from "./persistency-provider";
 import { BUCKET_CONFIG, CLIENT_CONFIG } from "../../../configuration/s3-config";
-import { asyncScheduler, Subject } from "rxjs";
+import { streamToString } from "../../../utility/fs-utils";
+import { asyncScheduler, from, Subject, Observer } from "rxjs";
 import { throttleTime } from "rxjs/operators";
 import { GetObjectCommand, GetObjectCommandOutput, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { Readable } from "stream";
 
 class S3PersistencyProvider implements PersistencyProvider {
     private static readonly PERSIST_INTERVAL = 5 * 60 * 1000;
@@ -13,7 +15,7 @@ class S3PersistencyProvider implements PersistencyProvider {
 
     private cached: string | null;
 
-    constructor(keyName: string) {
+    constructor(keyName: string, onInitialized: () => void) {
         this.persistObjectRequestSubject = new Subject();
         this.keyName = keyName;
         this.s3Client = new S3Client({ region: CLIENT_CONFIG.region });
@@ -24,6 +26,7 @@ class S3PersistencyProvider implements PersistencyProvider {
         throttledObservable.subscribe(this.putObjectInBucket);
 
         this.cached = null;
+        from(this.initializeCache()).subscribe(onInitialized);
     }
 
     public readonly updateOrCreate = (data: string): boolean => {
@@ -62,16 +65,24 @@ class S3PersistencyProvider implements PersistencyProvider {
         this.cached = await this.s3Client.send(new GetObjectCommand({
             Bucket: BUCKET_CONFIG.bucketName,
             Key: this.keyName,
-        })).then((value: GetObjectCommandOutput) => {
+        })).then(async (value: GetObjectCommandOutput) => {
             if (!value || !value.Body) {
                 console.warn(`Recieved unexpected response when requesting '${this.keyName}' from bucket ${value}.`)
-                return "";
+                throw new Error("Undefined response or body on s3 object request");
             }
 
-            return value.Body.toString();
+            if (!(value.Body instanceof Readable)) {
+                throw new Error(`response body has unexpected type: ${typeof value.Body}`);
+            }
+
+            return await streamToString(value.Body).toPromise();
         }).catch((error: unknown) => {
             console.error(`Unable to read '${this.keyName}' from bucket: ${error}`);
             throw error;
         })
     }
+}
+
+export {
+    S3PersistencyProvider
 }

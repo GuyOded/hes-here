@@ -42,6 +42,8 @@ class ApplicationStarter {
         if (!heroesGuild) {
             throw new Error(`Unable to find guild '${config.serverName}'`);
         }
+        // Updates cache...
+        heroesGuild.members.fetch();
 
         // TODO: Move all this code to a dependency injection initialization area
         // Ugly but necessary... Wait until s3 is library is initialized

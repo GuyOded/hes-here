@@ -1,6 +1,8 @@
 import { Client, Intents } from "discord.js";
 import auth from "./configuration/auth";
 import { ApplicationStarter } from "./state-management/application-starter";
+import { S3PersistencyProviderBuilder } from "./state-management/persistency/providers/builders";
+import { S3PersistencyProvider } from "./state-management/persistency/providers/s3-persistency-provider";
 
 const client = new Client({
     ws: {
@@ -20,5 +22,9 @@ client.login(auth.token).catch((reason: any) => {
 })
 
 client.once("ready", () => {
-    const appStarter: ApplicationStarter = new ApplicationStarter(client);
+    const builder: S3PersistencyProviderBuilder = new S3PersistencyProviderBuilder("gaspiseere-state");
+    builder.build().then((persistencyProvider: S3PersistencyProvider) => {
+        const appStarter: ApplicationStarter = new ApplicationStarter(client, persistencyProvider);
+        appStarter.run();
+    });
 })

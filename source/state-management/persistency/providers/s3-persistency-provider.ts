@@ -1,10 +1,10 @@
-import { PersistencyProvider } from "./persistency-provider";
+import { GetObjectCommand, GetObjectCommandOutput, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { asyncScheduler, Subject } from "rxjs";
+import { throttleTime } from "rxjs/operators";
+import { Readable } from "stream";
 import { BUCKET_CONFIG, CLIENT_CONFIG } from "../../../configuration/s3-config";
 import { streamToString } from "../../../utility/fs-utils";
-import { asyncScheduler, from, Subject, Observer } from "rxjs";
-import { throttleTime } from "rxjs/operators";
-import { GetObjectCommand, GetObjectCommandOutput, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
-import { Readable } from "stream";
+import { PersistencyProvider } from "./persistency-provider";
 
 class S3PersistencyProvider implements PersistencyProvider {
     private static readonly PERSIST_INTERVAL = 5 * 60 * 1000;
@@ -15,7 +15,7 @@ class S3PersistencyProvider implements PersistencyProvider {
 
     private cached: string | null;
 
-    constructor(keyName: string, onInitialized: () => void) {
+    constructor(keyName: string) {
         this.persistObjectRequestSubject = new Subject();
         this.keyName = keyName;
         this.s3Client = new S3Client({ region: CLIENT_CONFIG.region });
@@ -26,7 +26,6 @@ class S3PersistencyProvider implements PersistencyProvider {
         throttledObservable.subscribe(this.putObjectInBucket);
 
         this.cached = null;
-        from(this.initializeCache()).subscribe(onInitialized);
     }
 
     public readonly updateOrCreate = (data: string): boolean => {
@@ -61,7 +60,7 @@ class S3PersistencyProvider implements PersistencyProvider {
         };
     }
 
-    private readonly initializeCache = async () => {
+    public readonly initializeCache: () => Promise<void> = async () => {
         this.cached = await this.s3Client.send(new GetObjectCommand({
             Bucket: BUCKET_CONFIG.bucketName,
             Key: this.keyName,
@@ -85,4 +84,4 @@ class S3PersistencyProvider implements PersistencyProvider {
 
 export {
     S3PersistencyProvider
-}
+};
